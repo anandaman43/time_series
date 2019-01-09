@@ -13,7 +13,7 @@ sample = pd.read_csv("/home/aman/PycharmProjects/seasonality_hypothesis/data_gen
 result = pd.DataFrame()
 count1 = 0
 count2 = 0
-tie = 0
+error = 0
 for index, row in tqdm(sample.iterrows()):
     df_series = individual_series(df, row["kunag"], row["matnr"])
     train, validation, test = splitter_2(df_series)
@@ -23,14 +23,13 @@ for index, row in tqdm(sample.iterrows()):
         result = result.append([[row["kunag"], row["matnr"], score1, score2]])
         if score1 < score2:
             count1 += 1
-        elif score1 > score2:
+        elif score1 >= score2:
             count2 += 1
-        else:
-            tie += 1
     except:
+        error += 1
         print("kunag:", row["kunag"], "matnr:", row["matnr"])
-    print("count1 :", count1, "count2 :", count2, "tie :", tie)
-print("count1 :", count1, "count2 :", count2, "tie :", tie)
+    print("count1 :", count1, "count2 :", count2, "error :", error)
+print("count1 :", count1, "count2 :", count2, "error :", error)
 result.columns = ["kunag", "matnr", "score1", "score2"]
-result.to_csv("/home/aman/PycharmProjects/seasonality_hypothesis/data_generated/bucket_1_sample_results_4_20190108.csv")
+result.to_csv("/home/aman/PycharmProjects/seasonality_hypothesis/data_generated/bucket_1_sample_results_5_point.csv")
 print(result)

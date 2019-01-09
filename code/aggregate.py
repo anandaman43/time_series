@@ -172,6 +172,16 @@ def overall_aggregate_seas_3_point():
     return season
 
 
+def overall_aggregate_seas_5_point():
+    season = pd.read_csv(
+        "~/PycharmProjects/seasonality_hypothesis/data_generated/aggregated_complete_outliers_removed_seas.csv",
+    names=["dt_week", "quantity"])
+    season = smoothing_5(season)
+    season["dt_week"] = season["dt_week"].apply(lambda x: pd.to_datetime(x, format="%Y-%m-%d"))
+    season = season.set_index("dt_week")
+    return season
+
+
 if __name__ == "__main__":
     # overall_aggregate_seas()
     print(overall_aggregate_seas_2().head())

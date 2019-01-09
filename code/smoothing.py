@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-def smoothing(df):
+def smoothing_3(df):
     df_copy = df.copy()
     max_index = df.shape[0] - 1
     for i in range(max_index-1):

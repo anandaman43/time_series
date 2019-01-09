@@ -1,7 +1,7 @@
 import statsmodels.api as sm
 import pandas as pd
 from sklearn.metrics import mean_squared_error
-from aggregate import overall_aggregate_seas_2
+from aggregate import overall_aggregate_seas_5_point
 
 
 def arima_mse(train, validation, order=(0, 1, 1)):
@@ -42,7 +42,7 @@ def arima(train, validation, test):
 
 
 def arima_mse_seasonality_added(train, validation, order=(0, 1, 1)):
-    total_seasonality = overall_aggregate_seas_2()
+    total_seasonality = overall_aggregate_seas_5_point()
     k = 0
     train["prediction"] = train["quantity"]
     for index, row in validation.iterrows():
