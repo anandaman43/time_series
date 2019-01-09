@@ -6,6 +6,7 @@ from statsmodels.tsa.seasonal import seasonal_decompose
 from dateutil import parser
 from outlier import ma_replace_outlier
 from tqdm import tqdm
+from smoothing import *
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -161,8 +162,17 @@ def overall_aggregate_seas_2():
     return season
 
 
+def overall_aggregate_seas_3_point():
+    season = pd.read_csv(
+        "~/PycharmProjects/seasonality_hypothesis/data_generated/aggregated_complete_outliers_removed_seas.csv",
+    names=["dt_week", "quantity"])
+    season = smoothing_3(season)
+    season["dt_week"] = season["dt_week"].apply(lambda x: pd.to_datetime(x, format="%Y-%m-%d"))
+    season = season.set_index("dt_week")
+    return season
+
 
 if __name__ == "__main__":
     # overall_aggregate_seas()
-    print(overall_aggregate_seas_2().index)
-    print(samples_aggregate_seas())
+    print(overall_aggregate_seas_2().head())
+    print(overall_aggregate_seas_3_point().head())
