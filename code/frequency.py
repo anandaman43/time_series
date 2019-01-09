@@ -17,7 +17,7 @@ def normalized_frequency(input_df):
     first_date = input_df["parse_date"].iloc[0]
     len_in_days = (latest_date - first_date).days
     if len_in_days <= 365:
-        return -1s
+        return -1
     if len_in_days <= 730:
         return -2
     latest_year = latest_date.year-1
