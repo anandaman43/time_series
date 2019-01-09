@@ -9,7 +9,9 @@ def arima_mse(train, validation, order=(0, 1, 1)):
     k = 0
     for index, row in validation.iterrows():
         train["quantity"] = train["quantity"].map(float)
-        model1 = sm.tsa.statespace.SARIMAX(train["quantity"], order=order)
+        model1 = sm.tsa.statespace.SARIMAX(train["quantity"], order=order, seasonal_order=(0, 0, 0, 52),
+                                           enforce_stationarity=True, enforce_invertibility=True,
+                                           measurement_error=False, time_varying_regression=False, mle_regression=True)
         res1 = model1.fit(disp=False)
         predicted = res1.forecast(1)
         row["prediction"] = predicted.values[0]
@@ -49,7 +51,10 @@ def arima_mse_seasonality_added(train, validation, order=(0, 1, 1)):
         exog_train = sm.add_constant(exog_train)
         seasonality_pred_index = validation.loc[index]["dt_week"]
         exog_prediction = [[1, total_seasonality.loc[seasonality_pred_index]]]
-        model1 = sm.tsa.statespace.SARIMAX(train["quantity"], exog_train, order=order)
+        model1 = sm.tsa.statespace.SARIMAX(train["quantity"], exog_train, order=order, seasonal_order=(0, 0, 0, 52),
+                                           enforce_stationarity=True, enforce_invertibility=True,
+                                           measurement_error=False, time_varying_regression=False,
+                                           mle_regression=True)
         res1 = model1.fit(disp=False)
         predicted = res1.forecast(1, exog=exog_prediction)
         row["prediction"] = predicted.values[0]
