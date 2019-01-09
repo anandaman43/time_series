@@ -45,3 +45,4 @@ df = load_data()
 sample = pd.read_csv("/home/aman/PycharmProjects/seasonality_hypothesis/data_generated/bucket_1_sample.csv")
 for index, row in tqdm(sample.iterrows()):
     function1(df, row["kunag"], row["matnr"])
+

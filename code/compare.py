@@ -17,16 +17,20 @@ tie = 0
 for index, row in tqdm(sample.iterrows()):
     df_series = individual_series(df, row["kunag"], row["matnr"])
     train, validation, test = splitter_2(df_series)
-    score1 = arima(train, validation, test)[0]
-    score2 = arima_seasonality_added(train, validation, test)[0]
-    result = result.append([[row["kunag"], row["matnr"], score1, score2]])
-    if score1 < score2:
-        count1 += 1
-    elif score1 > score2:
-        count2 += 1
-    else:
-        tie += 1
+    try:
+        score1 = arima(train, validation, test)[0]
+        score2 = arima_seasonality_added(train, validation, test)[0]
+        result = result.append([[row["kunag"], row["matnr"], score1, score2]])
+        if score1 < score2:
+            count1 += 1
+        elif score1 > score2:
+            count2 += 1
+        else:
+            tie += 1
+    except:
+        print("kunag:", row["kunag"], "matnr:", row["matnr"])
+    print("count1 :", count1, "count2 :", count2, "tie :", tie)
 print("count1 :", count1, "count2 :", count2, "tie :", tie)
 result.columns = ["kunag", "matnr", "score1", "score2"]
-result.to_csv("/home/aman/PycharmProjects/seasonality_hypothesis/data_generated/bucket_1_sample_results_3.csv")
+result.to_csv("/home/aman/PycharmProjects/seasonality_hypothesis/data_generated/bucket_1_sample_results_4_20190108.csv")
 print(result)

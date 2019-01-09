@@ -1,7 +1,7 @@
 import statsmodels.api as sm
 import pandas as pd
 from sklearn.metrics import mean_squared_error
-from aggregate import samples_aggregate_seas
+from aggregate import overall_aggregate_seas_2
 
 
 def arima_mse(train, validation, order=(0, 1, 1)):
@@ -40,15 +40,15 @@ def arima(train, validation, test):
 
 
 def arima_mse_seasonality_added(train, validation, order=(0, 1, 1)):
-    total_seasonality = samples_aggregate_seas()
+    total_seasonality = overall_aggregate_seas_2()
     k = 0
     train["prediction"] = train["quantity"]
     for index, row in validation.iterrows():
         train["quantity"] = train["quantity"].map(float)
-        exog_train = total_seasonality[train.set_index("dt_week").index].reset_index(drop=True)
+        exog_train = total_seasonality.loc[train.set_index("dt_week").index].reset_index(drop=True)
         exog_train = sm.add_constant(exog_train)
         seasonality_pred_index = validation.loc[index]["dt_week"]
-        exog_prediction = [[1, total_seasonality[seasonality_pred_index]]]
+        exog_prediction = [[1, total_seasonality.loc[seasonality_pred_index]]]
         model1 = sm.tsa.statespace.SARIMAX(train["quantity"], exog_train, order=order)
         res1 = model1.fit(disp=False)
         predicted = res1.forecast(1, exog=exog_prediction)

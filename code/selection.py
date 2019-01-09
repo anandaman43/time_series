@@ -17,7 +17,7 @@ def remove_negative_rows(input_df):
     return input_df[input_df["quantity"] >= 0]
 
 
-def individual_series(input_df, kunag=500057582, matnr=117803):
+def individual_series(input_df, kunag=500057582, matnr=103029):
     """
     selects a dataframe corresponding to a particular kunag and matnr
     param: a pandas dataframe
