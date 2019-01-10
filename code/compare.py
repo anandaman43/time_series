@@ -8,6 +8,7 @@ from tqdm import tqdm
 import warnings
 warnings.filterwarnings("ignore")
 
+
 df = load_data()
 sample = pd.read_csv("/home/aman/PycharmProjects/seasonality_hypothesis/data_generated/bucket_1_sample.csv")
 result = pd.DataFrame()
@@ -31,5 +32,6 @@ for index, row in tqdm(sample.iterrows()):
     print("count1 :", count1, "count2 :", count2, "error :", error)
 print("count1 :", count1, "count2 :", count2, "error :", error)
 result.columns = ["kunag", "matnr", "score1", "score2"]
-result.to_csv("/home/aman/PycharmProjects/seasonality_hypothesis/data_generated/bucket_1_sample_results_5_point_sample.csv")
+result.to_csv(
+    "/home/aman/PycharmProjects/seasonality_hypothesis/data_generated/bucket_1_sample_results_5_point_sample.csv")
 print(result)

@@ -5,9 +5,10 @@ from dateutil import parser
 from outlier import ma_replace_outlier
 from statsmodels.tsa.seasonal import seasonal_decompose
 import matplotlib.pyplot as plt
+from statsmodels.tsa.stattools import adfuller
 
 
-def overall_aggregate_seas(input_df, matnr=103029):
+def dickey_fuller_test(input_df, matnr=103029):
     """
     This function aggregates whole cleaveland data with ma outliers removing different categories series outliers
     First week has been removed
@@ -74,21 +75,15 @@ def overall_aggregate_seas(input_df, matnr=103029):
             k = 1
     final = final.groupby("dt_week")["quantity"].sum().reset_index()
     final = final.set_index("dt_week")
-    #final.to_csv(
-    #    "~/PycharmProjects/seasonality_hypothesis/data_generated/product_aggregate_"+str(matnr)+".csv")
-    result = seasonal_decompose(final["quantity"], model="additive")
-    result.plot()
-    plt.savefig(
-        "/home/aman/PycharmProjects/seasonality_hypothesis/plots_product_aggregate/"+str(matnr)+".png")
-    #result.seasonal.to_csv(
-    #    "~/PycharmProjects/seasonality_hypothesis/data_generated/product_aggregate_seasonality_"+str(matnr)+".csv")
-    return result.seasonal
+    result = adfuller(final["quantity"])
+    print('ADF Statistic: %f' % result[0])
+    print('p-value: %f' % result[1])
+    print('Critical Values:')
+    for key, value in result[4].items():
+        print('\t%s: %.3f' % (key, value))
 
 
 if __name__ == "__main__":
     from selection import load_data
     df = load_data()
-    # sample = pd.read_csv("/home/aman/PycharmProjects/seasonality_hypothesis/data_generated/bucket_1_sample.csv")
-    # for index, row in tqdm(sample.iterrows()):
-    #     overall_aggregate_seas(df, row["matnr"])
-    overall_aggregate_seas(df)
+    dickey_fuller_test(df, matnr=151988)
