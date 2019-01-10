@@ -182,7 +182,16 @@ def overall_aggregate_seas_5_point():
     return season
 
 
+def sample_aggregate_seas_5_point():
+    season = samples_aggregate_seas().reset_index()
+    season.columns = ["dt_week", "quantity"]
+    season = smoothing_5(season)
+    season["dt_week"] = season["dt_week"].apply(lambda x: pd.to_datetime(x, format="%Y-%m-%d"))
+    season = season.set_index("dt_week")
+    return season
+
+
 if __name__ == "__main__":
-    # overall_aggregate_seas()
-    print(overall_aggregate_seas_2().head())
-    print(overall_aggregate_seas_3_point().head())
+    #overall_aggregate_seas()
+    print(overall_aggregate_seas_5_point().head())
+    #print(overall_aggregate_seas_3_point().head())

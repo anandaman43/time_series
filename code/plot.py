@@ -11,7 +11,7 @@ def plot(df):
     plt.xlabel("dt_weeks")
     plt.ylabel("aggregated quantities")
     plt.title("aggregated")
-    plt.show()s
+    plt.show()
 
 
 if __name__ == "__main__":
