@@ -79,7 +79,7 @@ def overall_aggregate_seas(input_df, matnr=103029):
     result = seasonal_decompose(final["quantity"], model="additive")
     result.plot()
     plt.savefig(
-        "/home/aman/PycharmProjects/seasonality_hypothesis/plots_product_aggregate/"+str(matnr)+"_"+product_name+".png")
+        "/home/aman/PycharmProjects/seasonality_hypothesis/plots_product_aggregate_26/"+str(matnr)+"_"+product_name+".png")
     #result.seasonal.to_csv(
     #    "~/PycharmProjects/seasonality_hypothesis/data_generated/product_aggregate_seasonality_"+str(matnr)+".csv")
     return result.seasonal
@@ -88,7 +88,12 @@ def overall_aggregate_seas(input_df, matnr=103029):
 if __name__ == "__main__":
     from selection import load_data
     df = load_data()
-    sample = pd.read_csv("/home/aman/PycharmProjects/seasonality_hypothesis/data_generated/bucket_1_sample.csv")
-    for index, row in tqdm(sample.iterrows()):
+    # sample = pd.read_csv("/home/aman/PycharmProjects/seasonality_hypothesis/data_generated/bucket_1_sample.csv")
+    # for index, row in tqdm(sample.iterrows()):
+    #     overall_aggregate_seas(df, row["matnr"])
+    # overall_aggregate_seas(df)
+    frequency_cleaveland = pd.read_csv(
+        "/home/aman/PycharmProjects/seasonality_hypothesis/data_generated/frequency_cleaveland.csv")
+    bucket_greater_26 = frequency_cleaveland[frequency_cleaveland["frequency"] > 26]
+    for index, row in tqdm(bucket_greater_26.iterrows()):
         overall_aggregate_seas(df, row["matnr"])
-    #overall_aggregate_seas(df)
