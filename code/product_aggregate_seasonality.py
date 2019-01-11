@@ -18,6 +18,8 @@ def overall_aggregate_seas(input_df, matnr=103029):
     overall = pd.read_csv(
         "~/PycharmProjects/seasonality_hypothesis/data_generated/frequency_days_cleaveland.csv")
     overall = overall[overall["matnr"] == matnr]
+    product = pd.read_csv("/home/aman/Desktop/CSO_drug/data/material_list.tsv", sep="\t")
+    product_name = product[product["matnr"] == str(matnr)]["description"].values[0]
     k = 0
     for index, row in tqdm(overall.iterrows()):
         frequency = row["frequency"]
@@ -74,12 +76,10 @@ def overall_aggregate_seas(input_df, matnr=103029):
             k = 1
     final = final.groupby("dt_week")["quantity"].sum().reset_index()
     final = final.set_index("dt_week")
-    #final.to_csv(
-    #    "~/PycharmProjects/seasonality_hypothesis/data_generated/product_aggregate_"+str(matnr)+".csv")
     result = seasonal_decompose(final["quantity"], model="additive")
     result.plot()
     plt.savefig(
-        "/home/aman/PycharmProjects/seasonality_hypothesis/plots_product_aggregate/"+str(matnr)+".png")
+        "/home/aman/PycharmProjects/seasonality_hypothesis/plots_product_aggregate/"+str(matnr)+"_"+product_name+".png")
     #result.seasonal.to_csv(
     #    "~/PycharmProjects/seasonality_hypothesis/data_generated/product_aggregate_seasonality_"+str(matnr)+".csv")
     return result.seasonal
@@ -88,7 +88,7 @@ def overall_aggregate_seas(input_df, matnr=103029):
 if __name__ == "__main__":
     from selection import load_data
     df = load_data()
-    # sample = pd.read_csv("/home/aman/PycharmProjects/seasonality_hypothesis/data_generated/bucket_1_sample.csv")
-    # for index, row in tqdm(sample.iterrows()):
-    #     overall_aggregate_seas(df, row["matnr"])
-    overall_aggregate_seas(df)
+    sample = pd.read_csv("/home/aman/PycharmProjects/seasonality_hypothesis/data_generated/bucket_1_sample.csv")
+    for index, row in tqdm(sample.iterrows()):
+        overall_aggregate_seas(df, row["matnr"])
+    #overall_aggregate_seas(df)
