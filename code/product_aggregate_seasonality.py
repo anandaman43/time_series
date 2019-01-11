@@ -94,6 +94,6 @@ if __name__ == "__main__":
     # overall_aggregate_seas(df)
     frequency_cleaveland = pd.read_csv(
         "/home/aman/PycharmProjects/seasonality_hypothesis/data_generated/frequency_cleaveland.csv")
-    bucket_greater_26 = frequency_cleaveland[frequency_cleaveland["frequency"] > 26]
+    bucket_greater_26 = frequency_cleaveland[frequency_cleaveland["frequency"] > 26].drop_duplicates(subset=["matnr"])
     for index, row in tqdm(bucket_greater_26.iterrows()):
         overall_aggregate_seas(df, row["matnr"])
