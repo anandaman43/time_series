@@ -53,12 +53,33 @@ def normalized_frequency_and_days(input_df, kunag, matnr):
 
 if __name__ == "__main__":
     from tqdm import tqdm
-    df = pd.read_csv("/home/aman/Desktop/CSO_drug/data/raw_invoices_cleaveland_sample_100_stores_2018-12-09.tsv",
-                     sep="\t")
+    df = pd.read_csv("/home/aman/PycharmProjects/seasonality_hypothesis/data/4200_C001_raw_invoices_2019-01-06.tsv",
+                     names=["kunag", "matnr", "date", "quantity", "price"])
     frequency_days_cleaveland = pd.DataFrame()
     for index, group in tqdm(df.groupby(["kunag", "matnr"])):
         freq, days = normalized_frequency_and_days(df, index[0], index[1])
         frequency_days_cleaveland = frequency_days_cleaveland.append([[index[0], index[1], freq, days]])
     frequency_days_cleaveland.columns = ["kunag", "matnr", "frequency", "days"]
     frequency_days_cleaveland.to_csv(
-        "/home/aman/PycharmProjects/seasonality_hypothesis/data_generated/frequency_days_cleaveland.csv")
+        "/home/aman/PycharmProjects/seasonality_hypothesis/data_generated/frequency_days_4200_C001.csv")
+
+
+    df = pd.read_csv("/home/aman/PycharmProjects/seasonality_hypothesis/data/4200_C005_raw_invoices_2019-01-06.tsv",
+                     names=["kunag", "matnr", "date", "quantity", "price"])
+    frequency_days_cleaveland = pd.DataFrame()
+    for index, group in tqdm(df.groupby(["kunag", "matnr"])):
+        freq, days = normalized_frequency_and_days(df, index[0], index[1])
+        frequency_days_cleaveland = frequency_days_cleaveland.append([[index[0], index[1], freq, days]])
+    frequency_days_cleaveland.columns = ["kunag", "matnr", "frequency", "days"]
+    frequency_days_cleaveland.to_csv(
+        "/home/aman/PycharmProjects/seasonality_hypothesis/data_generated/frequency_days_4200_C005.csv")
+
+    df = pd.read_csv("/home/aman/PycharmProjects/seasonality_hypothesis/data/4200_C025_raw_invoices_2019-01-06.tsv",
+                     names=["kunag", "matnr", "date", "quantity", "price"])
+    frequency_days_cleaveland = pd.DataFrame()
+    for index, group in tqdm(df.groupby(["kunag", "matnr"])):
+        freq, days = normalized_frequency_and_days(df, index[0], index[1])
+        frequency_days_cleaveland = frequency_days_cleaveland.append([[index[0], index[1], freq, days]])
+    frequency_days_cleaveland.columns = ["kunag", "matnr", "frequency", "days"]
+    frequency_days_cleaveland.to_csv(
+        "/home/aman/PycharmProjects/seasonality_hypothesis/data_generated/frequency_days_4200_C025.csv")

@@ -5,6 +5,8 @@ from dateutil import parser
 from outlier import ma_replace_outlier
 from statsmodels.tsa.seasonal import seasonal_decompose
 import matplotlib.pyplot as plt
+import warnings
+warnings.filterwarnings("ignore")
 
 
 def overall_aggregate_seas(input_df, matnr=103029):
@@ -16,18 +18,18 @@ def overall_aggregate_seas(input_df, matnr=103029):
     df = input_df.copy()
     df = df[df["matnr"] == matnr]
     overall = pd.read_csv(
-        "~/PycharmProjects/seasonality_hypothesis/data_generated/frequency_days_cleaveland.csv")
+        "~/PycharmProjects/seasonality_hypothesis/data_generated/frequency_days_4200_C025.csv")
     overall = overall[overall["matnr"] == matnr]
-    product = pd.read_csv("/home/aman/Desktop/CSO_drug/data/material_list.tsv", sep="\t")
+    product = pd.read_csv("~/PycharmProjects/seasonality_hypothesis/data/material_list.tsv", sep="\t")
     product_name = product[product["matnr"] == str(matnr)]["description"].values[0]
     k = 0
-    for index, row in tqdm(overall.iterrows()):
+    for index, row in overall.iterrows():
         frequency = row["frequency"]
         days = row["days"]
         df_series = df[(df["kunag"] == row["kunag"]) & (df["matnr"] == row["matnr"])]
         df_series = df_series[df_series["quantity"] >= 0]
         df_series = df_series[df_series["date"] >= 20160703]
-        if frequency == 0:
+        if int(frequency) == 0:
             continue
         df_series = get_weekly_aggregate(df_series)
         _testing = df_series[["quantity", "dt_week"]].copy()
@@ -74,26 +76,42 @@ def overall_aggregate_seas(input_df, matnr=103029):
         if k == 0:
             final = result
             k = 1
-    final = final.groupby("dt_week")["quantity"].sum().reset_index()
+
+    try:
+        final = final.groupby("dt_week")["quantity"].sum().reset_index()
+    except:
+        return None
     final = final.set_index("dt_week")
+    print(final["quantity"])
+    print(final["quantity"].shape)
     result = seasonal_decompose(final["quantity"], model="additive")
     result.plot()
+    #plt.show()
     plt.savefig(
-        "/home/aman/PycharmProjects/seasonality_hypothesis/plots_product_aggregate_26/"+str(matnr)+"_"+product_name+".png")
+        "/home/aman/PycharmProjects/seasonality_hypothesis/plots_product_C0025/"+str(matnr)+"_"+product_name+".png")
     #result.seasonal.to_csv(
     #    "~/PycharmProjects/seasonality_hypothesis/data_generated/product_aggregate_seasonality_"+str(matnr)+".csv")
     return result.seasonal
 
 
 if __name__ == "__main__":
-    from selection import load_data
-    df = load_data()
-    # sample = pd.read_csv("/home/aman/PycharmProjects/seasonality_hypothesis/data_generated/bucket_1_sample.csv")
-    # for index, row in tqdm(sample.iterrows()):
-    #     overall_aggregate_seas(df, row["matnr"])
-    # overall_aggregate_seas(df)
-    frequency_cleaveland = pd.read_csv(
-        "/home/aman/PycharmProjects/seasonality_hypothesis/data_generated/frequency_cleaveland.csv")
-    bucket_greater_26 = frequency_cleaveland[frequency_cleaveland["frequency"] > 26].drop_duplicates(subset=["matnr"])
-    for index, row in tqdm(bucket_greater_26.iterrows()):
-        overall_aggregate_seas(df, row["matnr"])
+    df = pd.read_csv("/home/aman/PycharmProjects/seasonality_hypothesis/data/4200_C025_raw_invoices_2019-01-06.tsv",
+                     names=["kunag", "matnr", "date", "quantity", "price"])
+
+    #"""
+    frequency_days = pd.read_csv(
+        "/home/aman/PycharmProjects/seasonality_hypothesis/data_generated/frequency_days_4200_C025.csv")
+    products = frequency_days["matnr"].unique()
+    error = []
+    for product in tqdm(products):
+        try:overall_aggregate_seas(df, product)
+        except:
+            error.append(product)
+            print(product)
+    for k in error:
+        print(k)
+        
+    #"""
+
+    #overall_aggregate_seas(df, 102580)
+
