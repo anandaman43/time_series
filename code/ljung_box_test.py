@@ -1,3 +1,4 @@
+from statsmodels.stats.diagnostic import acorr_ljungbox
 import pandas as pd
 from tqdm import tqdm
 from data_transformation import get_weekly_aggregate
@@ -122,8 +123,8 @@ def dickey_fuller_test(input_df, matnr=112260):
     final = final.groupby("dt_week")["quantity"].sum().reset_index()
     final = final.set_index("dt_week")
     #temp = final
-    # plt.plot(final, marker=".")
-    # plt.title("original")
+    plt.figure(figsize=(16, 8))
+    plt.plot(final, marker=".")
     # plt.show()
     final, Flag = cond_check(final)
     if Flag:
@@ -132,28 +133,16 @@ def dickey_fuller_test(input_df, matnr=112260):
         # plt.title("detrended")
         # plt.show()
         final_aggregate = monthly_aggregate(final_detrended)
+        # plt.figure(figsize=(16, 8))
         # plt.plot(final_aggregate, marker=".")
-        # plt.title("aggregated")
-        # plt.show()
-        result = adfuller(final_aggregate["quantity"], maxlag=10, autolag='t-stat')
-        print('ADF Statistic: %f' % result[0])
-        print('p-value: %f' % result[1])
-        print("No of lags used: %f" %result[2])
-        print("No of observations: %f" % result[3])
-        print('Critical Values:')
-        for key, value in result[4].items():
-            print('\t%s: %.3f' % (key, value))
-        #plt.figure(figsize=(16, 8))
-        #plt.plot(temp, marker=".")
-        if result[1] >= 0.05:
-            #plt.title("Not Stationary")
-            print("Not stationary")
-        else :
-            #plt.title("Stationary")
-            print("Stationary")
-        #plt.savefig("/home/aman/PycharmProjects/seasonality_hypothesis/seasonality_result_2/" + str(matnr) + "_" + product_name + ".png")
+        result = acorr_ljungbox(final_aggregate["quantity"], lags=[13])
+        print("statistic: %f" %result[0])
+        print("p-value: %f" %result[1])
+        plt.title("statistic: " + str(result[0]) + "p-value :" + str(result[1]))
+        plt.savefig("/home/aman/PycharmProjects/seasonality_hypothesis/temp2/" + str(matnr) + "_" + product_name + ".png")
     else:
         print("length of series is less than 112")
+
 
 
 if __name__ == "__main__":
@@ -161,11 +150,11 @@ if __name__ == "__main__":
     # df = pd.read_csv("/home/aman/PycharmProjects/seasonality_hypothesis/data/4200_C005_raw_invoices_2019-01-06.tsv",
     #                  names=["kunag", "matnr", "date", "quantity", "price"])
     df = load_data()
-    dickey_fuller_test(df, matnr=100278)
-    # import os
-    # dir = "/home/aman/PycharmProjects/seasonality_hypothesis/older_plots/plots_product_aggregate/"
-    # for i in os.listdir((dir)):
-    #     try:
-    #         dickey_fuller_test(df, matnr=int(i.split("_")[0]))
-    #     except:
-    #         pass
+    #dickey_fuller_test(df, matnr=101728)
+    import os
+    dir = "/home/aman/PycharmProjects/seasonality_hypothesis/older_plots/plots_product_aggregate/"
+    for i in os.listdir((dir)):
+        try:
+            dickey_fuller_test(df, matnr=int(i.split("_")[0]))
+        except:
+            pass
