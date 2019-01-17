@@ -1,7 +1,7 @@
 import statsmodels.api as sm
 import pandas as pd
 from sklearn.metrics import mean_squared_error
-from aggregate import sample_aggregate_seas_5_point
+#from aggregate import overall_aggregate_seas_5_point
 
 
 def arima_mse(train, validation, order=(0, 1, 1)):
@@ -41,8 +41,8 @@ def arima(train, validation, test):
     return mse, output_df, output_val, order, mse_val
 
 
-def arima_mse_seasonality_added(train, validation, order=(0, 1, 1)):
-    total_seasonality = sample_aggregate_seas_5_point()
+def arima_mse_seasonality_added(train, validation, seasonality, order=(0, 1, 1)):
+    total_seasonality = seasonality.copy()
     k = 0
     train["prediction"] = train["quantity"]
     for index, row in validation.iterrows():
@@ -67,10 +67,10 @@ def arima_mse_seasonality_added(train, validation, order=(0, 1, 1)):
     return mean_squared_error(test_df["quantity"], test_df["prediction"]), output_df
 
 
-def arima_seasonality_added(train, validation, test):
+def arima_seasonality_added(train, validation, test, seasonality):
 
-    mse1, output_1 = arima_mse_seasonality_added(train, validation, (0, 1, 1))
-    mse2, output_2 = arima_mse_seasonality_added(train, validation, (0, 2, 2))
+    mse1, output_1 = arima_mse_seasonality_added(train, validation, seasonality, order=(0, 1, 1))
+    mse2, output_2 = arima_mse_seasonality_added(train, validation, seasonality, order=(0, 2, 2))
     output_val = output_1
     if mse1 <= mse2:
         order = (0, 1, 1)
@@ -81,7 +81,7 @@ def arima_seasonality_added(train, validation, test):
         mse_val = mse2
 
     train = pd.concat([train, validation])
-    mse, output_df = arima_mse_seasonality_added(train, test, order)
+    mse, output_df = arima_mse_seasonality_added(train, test, seasonality, order=order)
     return mse, output_df, output_val, order, mse_val
 
 

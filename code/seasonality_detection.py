@@ -66,7 +66,7 @@ def ljung_box_test(input_df, matnr=112260):
     product = pd.read_csv("~/PycharmProjects/seasonality_hypothesis/data/material_list.tsv", sep="\t")
     product_name = product[product["matnr"] == str(matnr)]["description"].values[0]
     k = 0
-    for index, row in tqdm(overall.iterrows()):
+    for index, row in overall.iterrows():
         frequency = row["frequency"]
         days = row["days"]
         df_series = df[(df["kunag"] == row["kunag"]) & (df["matnr"] == row["matnr"])]
@@ -125,7 +125,7 @@ def ljung_box_test(input_df, matnr=112260):
     #temp = final
     plt.figure(figsize=(16, 8))
     plt.plot(final, marker=".")
-    # plt.show()
+    plt.show()
     final, Flag = cond_check(final)
     if Flag:
         final_detrended = detrend(final)
@@ -136,10 +136,13 @@ def ljung_box_test(input_df, matnr=112260):
         # plt.figure(figsize=(16, 8))
         # plt.plot(final_aggregate, marker=".")
         result = acorr_ljungbox(final_aggregate["quantity"], lags=[13])
-        print("statistic: %f" %result[0])
-        print("p-value: %f" %result[1])
-        plt.title("statistic: " + str(result[0]) + "p-value :" + str(result[1]))
-        plt.savefig("/home/aman/PycharmProjects/seasonality_hypothesis/temp2/" + str(matnr) + "_" + product_name + ".png")
+        # print("statistic: %f" %result[0])
+        # print("p-value: %f" %result[1])
+        if result[1] <= 0.05:
+            print(result[1])
+            return True
+        else:
+            return False
     else:
         print("length of series is less than 112")
 
@@ -149,11 +152,11 @@ if __name__ == "__main__":
     # df = pd.read_csv("/home/aman/PycharmProjects/seasonality_hypothesis/data/4200_C005_raw_invoices_2019-01-06.tsv",
     #                  names=["kunag", "matnr", "date", "quantity", "price"])
     df = load_data()
-    #dickey_fuller_test(df, matnr=101728)
-    import os
-    dir = "/home/aman/PycharmProjects/seasonality_hypothesis/older_plots/plots_product_aggregate/"
-    for i in os.listdir((dir)):
-        try:
-            dickey_fuller_test(df, matnr=int(i.split("_")[0]))
-        except:
-            pass
+    print(ljung_box_test(df, matnr=134926))
+    # import os
+    # dir = "/home/aman/PycharmProjects/seasonality_hypothesis/older_plots/plots_product_aggregate/"
+    # for i in os.listdir((dir)):
+    #     try:
+    #         dickey_fuller_test(df, matnr=int(i.split("_")[0]))
+    #     except:
+    #         pass
