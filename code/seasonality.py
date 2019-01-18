@@ -98,6 +98,12 @@ def product_seasonal_comp(input_df, matnr=103029):
         return None
     final = final.set_index("dt_week")
     result = seasonal_decompose(final["quantity"], model="additive")
+    product = pd.read_csv("~/PycharmProjects/seasonality_hypothesis/data/material_list.tsv", sep="\t")
+    product_name = product[product["matnr"] == str(matnr)]["description"].values[0]
+    plt.figure(figsize=(16, 8))
+    plt.plot(result.seasonal, marker=".")
+    plt.title("original_" + product_name)
+    plt.show()
     return result.seasonal
 
 
@@ -112,5 +118,9 @@ def product_seasonal_comp_5_point(df, matnr):
 
 if __name__=="__main__":
     df = load_data()
-    plt.plot(product_seasonal_comp_5_point(df, 144484))
+    matnr = 103029
+    plt.plot(product_seasonal_comp_5_point(df, matnr), marker=".")
+    product = pd.read_csv("~/PycharmProjects/seasonality_hypothesis/data/material_list.tsv", sep="\t")
+    product_name = product[product["matnr"] == str(matnr)]["description"].values[0]
+    plt.title("smoothing_" + product_name)
     plt.show()
