@@ -100,10 +100,10 @@ def product_seasonal_comp(input_df, matnr=103029):
     result = seasonal_decompose(final["quantity"], model="additive")
     product = pd.read_csv("~/PycharmProjects/seasonality_hypothesis/data/material_list.tsv", sep="\t")
     product_name = product[product["matnr"] == str(matnr)]["description"].values[0]
-    plt.figure(figsize=(16, 8))
-    plt.plot(result.seasonal, marker=".")
-    plt.title("original_" + product_name)
-    plt.show()
+    # plt.figure(figsize=(16, 8))
+    # plt.plot(result.seasonal, marker=".")
+    # plt.title("original_" + product_name)
+    # plt.show()
     return result.seasonal
 
 
@@ -116,11 +116,39 @@ def product_seasonal_comp_5_point(df, matnr):
     return season
 
 
+def product_seasonal_comp_7_point(df, matnr):
+    input_df = product_seasonal_comp(df, matnr)
+    # plt.plot(input_df, marker=".")
+    # plt.title("original")
+    # plt.show()
+    input_df = input_df.reset_index().copy()
+    max_index = input_df.shape[0] - 1
+    df_copy = input_df.copy()
+    for i in range(0, max_index-5):
+        mean = input_df.iloc[i:i+7]["quantity"].mean()
+        df_copy["quantity"].iloc[i+3] = mean
+    df_copy["quantity"].iloc[0] = df_copy.iloc[0+52]["quantity"]
+    df_copy["quantity"].iloc[1] = df_copy.iloc[1+52]["quantity"]
+    df_copy["quantity"].iloc[2] = df_copy.iloc[2+52]["quantity"]
+    df_copy["quantity"].iloc[-1] = df_copy.iloc[-1-52]["quantity"]
+    df_copy["quantity"].iloc[-2] = df_copy.iloc[-2-52]["quantity"]
+    df_copy["quantity"].iloc[-3] = df_copy.iloc[-3-52]["quantity"]
+    output_df = df_copy.set_index("dt_week")
+    return output_df
+
+
 if __name__=="__main__":
     df = load_data()
-    matnr = 103029
-    plt.plot(product_seasonal_comp_5_point(df, matnr), marker=".")
-    product = pd.read_csv("~/PycharmProjects/seasonality_hypothesis/data/material_list.tsv", sep="\t")
-    product_name = product[product["matnr"] == str(matnr)]["description"].values[0]
-    plt.title("smoothing_" + product_name)
+    matnr = 134926
+    temp = product_seasonal_comp_7_point(df, matnr).reset_index()
+    plt.plot(temp.set_index("dt_week"), marker=".")
+    plt.title("smoothened")
     plt.show()
+    # for i in range(0, 30):
+    #     print(temp.iloc[i]["quantity"], temp.iloc[i+52]["quantity"])
+    # plt.plot(product_seasonal_comp(df, matnr), marker=".")
+    # product = pd.read_csv("~/PycharmProjects/seasonality_hypothesis/data/material_list.tsv", sep="\t")
+    # product_name = product[product["matnr"] == str(matnr)]["description"].values[0]
+    # plt.title("smoothing_" + product_name)
+    # plt.show()
+

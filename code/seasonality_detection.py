@@ -123,9 +123,9 @@ def ljung_box_test(input_df, matnr=112260):
     final = final.groupby("dt_week")["quantity"].sum().reset_index()
     final = final.set_index("dt_week")
     #temp = final
-    plt.figure(figsize=(16, 8))
-    plt.plot(final, marker=".")
-    plt.show()
+    # plt.figure(figsize=(16, 8))
+    # plt.plot(final, marker=".")
+    # plt.show()
     final, Flag = cond_check(final)
     if Flag:
         final_detrended = detrend(final)
@@ -138,7 +138,7 @@ def ljung_box_test(input_df, matnr=112260):
         result = acorr_ljungbox(final_aggregate["quantity"], lags=[13])
         # print("statistic: %f" %result[0])
         # print("p-value: %f" %result[1])
-        if result[1] <= 0.05:
+        if result[1] < 0.01:
             print(result[1])
             return True
         else:
@@ -152,7 +152,7 @@ if __name__ == "__main__":
     # df = pd.read_csv("/home/aman/PycharmProjects/seasonality_hypothesis/data/4200_C005_raw_invoices_2019-01-06.tsv",
     #                  names=["kunag", "matnr", "date", "quantity", "price"])
     df = load_data()
-    print(ljung_box_test(df, matnr=134926))
+    print(ljung_box_test(df, matnr=132530))
     # import os
     # dir = "/home/aman/PycharmProjects/seasonality_hypothesis/older_plots/plots_product_aggregate/"
     # for i in os.listdir((dir)):
