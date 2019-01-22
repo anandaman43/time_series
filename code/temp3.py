@@ -1,5 +1,11 @@
 import pandas as pd
-frequency_cleaveland = pd.read_csv(
-        "/home/aman/PycharmProjects/seasonality_hypothesis/data_generated/frequency_cleaveland.csv")
-bucket_greater_26 = frequency_cleaveland[frequency_cleaveland["frequency"] > 26]
-print(bucket_greater_26.drop_duplicates(subset=["matnr"]).shape)
+from selection import load_data
+
+df = load_data()
+df = df [df["quantity"] >= 0]
+matnr = 101728
+df = df[df["matnr"] == matnr]
+date1 = 20160731
+date2 = 20160806
+one_week = df[(df["date"]>= date1) & (df["date"] <= date2)]
+print(one_week)
