@@ -5,7 +5,7 @@ from hypothesis import arima
 from hypothesis import arima_seasonality_added
 from preprocess import splitter_2
 from tqdm import tqdm
-from seasonality import product_seasonal_comp_7_point
+from stl_decompose import product_seasonal_comp_7_point
 from selection import load_data
 import warnings
 from seasonality_detection import ljung_box_test
@@ -27,9 +27,11 @@ for index, row in sample.iterrows():
     if not seas_pres:
         continue
     seasonality_product = product_seasonal_comp_7_point(df, int(row["matnr"]))
-    score1 = arima(train, validation, test)[0]
+    score1 = arima(train, validation, test)
+    score1 = score1[0] + score1[4]
     print("score1=", score1)
-    score2 = arima_seasonality_added(train, validation, test, seasonality_product)[0]
+    score2 = arima_seasonality_added(train, validation, test, seasonality_product)
+    score2 = score2[0] + score2[4]
     print("score2=", score2)
     result = result.append([[row["kunag"], row["matnr"], score1, score2]])
     if score1 < score2:
@@ -39,5 +41,5 @@ for index, row in sample.iterrows():
     print("count1 :", count1, "count2 :", count2, "error :", error)
 result.columns = ["kunag", "matnr", "score1", "score2"]
 result.to_csv(
-    "/home/aman/PycharmProjects/seasonality_hypothesis/data_generated/bucket_1_sample_results_7_point_seasonality_18th_jan_thresgh_0.05.csv")
+    "/home/aman/PycharmProjects/seasonality_hypothesis/data_generated/bucket_1_sample_results_7_point_seasonality_18th_jan_thresgh_0.01_stl_test_val.csv")
 print(result)

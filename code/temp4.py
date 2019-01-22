@@ -6,7 +6,7 @@ from hypothesis import arima_seasonality_added
 from preprocess import splitter_2
 from tqdm import tqdm
 import matplotlib.pyplot as plt
-from seasonality import product_seasonal_comp_7_point
+from stl_decompose import product_seasonal_comp_7_point
 from seasonality_detection import ljung_box_test
 import warnings
 warnings.filterwarnings("ignore")
@@ -57,7 +57,7 @@ def function1(df, kunag, matnr):
     #                              'normal = ' + str(order2) + '\n'
     #                              'test_mse_normal = ' + str(score2) + '\n'
     #                              'validation_mse_normal = ' + str(mse_val_2) + '\n')
-    plt.savefig("/home/aman/PycharmProjects/seasonality_hypothesis/plots_seasonality_108_7_point/" + str(kunag) + "_" + str(matnr) + ".png")
+    plt.savefig("/home/aman/PycharmProjects/seasonality_hypothesis/stl_plots_seasonality_108_7_point_thresh_0.01/" + str(kunag) + "_" + str(matnr) + ".png")
     #plt.show()
 
 

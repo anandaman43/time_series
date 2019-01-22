@@ -3,6 +3,7 @@ from data_transformation import get_weekly_aggregate
 import matplotlib.pyplot as plt
 import pandas as pd
 from statsmodels.tsa.seasonal import seasonal_decompose
+from stldecompose import decompose, forecast
 from dateutil import parser
 from outlier import ma_replace_outlier
 from smoothing import *
@@ -97,16 +98,19 @@ def product_seasonal_comp(input_df, matnr=103029):
     except:
         return None
     final = final.set_index("dt_week")
-    result = seasonal_decompose(final["quantity"], model="additive")
-    result.plot()
-    plt.show()
+    stl = decompose(final, period=52)
+    # stl.plot()
+    # plt.show()
+    # result = seasonal_decompose(final["quantity"], model="additive")
+    # result.plot()
+    # plt.show()
     product = pd.read_csv("~/PycharmProjects/seasonality_hypothesis/data/material_list.tsv", sep="\t")
     product_name = product[product["matnr"] == str(matnr)]["description"].values[0]
     # plt.figure(figsize=(16, 8))
     # plt.plot(result.seasonal, marker=".")
     # plt.title("original_" + product_name)
     # plt.show()
-    return result.seasonal
+    return stl.seasonal
 
 
 def product_seasonal_comp_5_point(df, matnr):
@@ -153,4 +157,3 @@ if __name__=="__main__":
     # product_name = product[product["matnr"] == str(matnr)]["description"].values[0]
     # plt.title("smoothing_" + product_name)
     # plt.show()
-
