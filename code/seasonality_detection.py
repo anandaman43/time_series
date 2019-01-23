@@ -63,8 +63,8 @@ def ljung_box_test(input_df, matnr=112260):
     overall = pd.read_csv(
         "~/PycharmProjects/seasonality_hypothesis/data_generated/frequency_days_4200_C005.csv")
     overall = overall[overall["matnr"] == matnr]
-    product = pd.read_csv("~/PycharmProjects/seasonality_hypothesis/data/material_list.tsv", sep="\t")
-    product_name = product[product["matnr"] == str(matnr)]["description"].values[0]
+    #product = pd.read_csv("~/PycharmProjects/seasonality_hypothesis/data/material_list.tsv", sep="\t")
+    #product_name = product[product["matnr"] == str(int(matnr))]["description"].values[0]
     k = 0
     for index, row in overall.iterrows():
         frequency = row["frequency"]

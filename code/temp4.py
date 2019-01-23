@@ -26,8 +26,10 @@ def function1(df, kunag, matnr):
     output1_val = output1_val.set_index("dt_week")
     output2_val = output2_val.set_index("dt_week")
     plt.figure(figsize=(16, 8))
-    plt.plot(input_df1["prediction"], marker=".", color='red', label='test_seasonality')
-    plt.plot(input_df2["prediction"], marker=".", color='blue', label='test_normal')
+    test_norm = pd.concat([output2_val, input_df2.iloc[-16:]])
+    test_seas = pd.concat([output1_val, input_df1.iloc[-16:]])
+    plt.plot(test_seas["prediction"], marker=".", color='red', label='test_seasonality')
+    plt.plot(test_norm["prediction"], marker=".", color='blue', label='test_normal')
     plt.plot(output1_val["prediction"], marker=".", color='brown', label='val_seasonality')
     plt.plot(output2_val["prediction"], marker=".", label='val_normal')
     plt.plot(input_df1["quantity"], marker=".", color='orange', label='actual')
@@ -64,7 +66,4 @@ def function1(df, kunag, matnr):
 df = load_data()
 sample = pd.read_csv("/home/aman/PycharmProjects/seasonality_hypothesis/data_generated/bucket_1_sample.csv")
 for index, row in tqdm(sample.iterrows()):
-    try:
-        function1(df, row["kunag"], row["matnr"])
-    except:
-        print("kunag:", row["kunag"], "matnr:", row["matnr"])
+    function1(df, int(row["kunag"]), int(row["matnr"]))

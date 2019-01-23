@@ -36,6 +36,7 @@ def product_seasonal_comp(input_df, matnr=103029):
         "/home/aman/PycharmProjects/seasonality_hypothesis/data_generated/frequency_days_4200_C005.csv")
     overall = overall[overall["matnr"] == matnr]
     product = pd.read_csv("~/PycharmProjects/seasonality_hypothesis/data/material_list.tsv", sep="\t")
+    print(matnr)
     print(product[product["matnr"] == str(matnr)]["description"].values[0])
     product_name = product[product["matnr"] == str(matnr)]["description"].values[0]
     k = 0
@@ -126,8 +127,8 @@ def product_seasonal_comp_5_point(df, matnr):
 
 def product_seasonal_comp_7_point(df, matnr):
     input_df = product_seasonal_comp(df, matnr)
+    # plt.figure(figsize=(16, 8))
     # plt.plot(input_df, marker=".")
-    # plt.title("original")
     # plt.show()
     input_df = input_df.reset_index().copy()
     max_index = input_df.shape[0] - 1
@@ -147,15 +148,20 @@ def product_seasonal_comp_7_point(df, matnr):
 
 if __name__=="__main__":
     df = load_data()
-    matnr = 112260
-    temp = product_seasonal_comp_7_point(df, matnr).reset_index()
-    plt.plot(temp.set_index("dt_week"), marker=".")
-    plt.title("smoothened")
-    plt.show()
+    sample = pd.read_csv("/home/aman/PycharmProjects/seasonality_hypothesis/data_generated/bucket_1_sample.csv")
+    sample = sample.drop_duplicates(subset=["matnr"])
+    product = pd.read_csv("~/PycharmProjects/seasonality_hypothesis/data/material_list.tsv", sep="\t")
+
+    for index, row in sample.iterrows():
+        matnr = int(row["matnr"])
+        temp = product_seasonal_comp_7_point(df, matnr).reset_index()
+        product_name = product[product["matnr"] == str(matnr)]["description"].values[0]
+        plt.figure(figsize=(16, 8))
+        plt.plot(temp.set_index("dt_week"), marker=".")
+        plt.title(product_name)
+        plt.savefig("/home/aman/PycharmProjects/seasonality_hypothesis/smoothened_sea_component/"+str(matnr)+"__"+product_name+".png")
     # for i in range(0, 30):
     #     print(temp.iloc[i]["quantity"], temp.iloc[i+52]["quantity"])
     # plt.plot(product_seasonal_comp(df, matnr), marker=".")
-    # product = pd.read_csv("~/PycharmProjects/seasonality_hypothesis/data/material_list.tsv", sep="\t")
-    # product_name = product[product["matnr"] == str(matnr)]["description"].values[0]
     # plt.title("smoothing_" + product_name)
     # plt.show()

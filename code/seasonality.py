@@ -32,7 +32,7 @@ def product_seasonal_comp(input_df, matnr=103029):
     df = input_df.copy()
     df = df[df["matnr"] == matnr]
     overall = pd.read_csv(
-        "/home/aman/PycharmProjects/seasonality_hypothesis/data_generated/frequency_days_cleaveland.csv")
+        "/home/aman/PycharmProjects/seasonality_hypothesis/data_generated/frequency_days_4200_C005.csv")
     overall = overall[overall["matnr"] == matnr]
     product = pd.read_csv("~/PycharmProjects/seasonality_hypothesis/data/material_list.tsv", sep="\t")
     print(product[product["matnr"] == str(matnr)]["description"].values[0])
@@ -141,7 +141,7 @@ def product_seasonal_comp_7_point(df, matnr):
 
 if __name__=="__main__":
     df = load_data()
-    matnr = 146858
+    matnr = 112260
     temp = product_seasonal_comp_7_point(df, matnr).reset_index()
     plt.plot(temp.set_index("dt_week"), marker=".")
     plt.title("smoothened")
