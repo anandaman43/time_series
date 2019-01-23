@@ -33,7 +33,7 @@ def product_seasonal_comp(input_df, matnr=103029):
     df = input_df.copy()
     df = df[df["matnr"] == matnr]
     overall = pd.read_csv(
-        "/home/aman/PycharmProjects/seasonality_hypothesis/data_generated/frequency_days_cleaveland.csv")
+        "/home/aman/PycharmProjects/seasonality_hypothesis/data_generated/frequency_days_4200_C005.csv")
     overall = overall[overall["matnr"] == matnr]
     product = pd.read_csv("~/PycharmProjects/seasonality_hypothesis/data/material_list.tsv", sep="\t")
     print(product[product["matnr"] == str(matnr)]["description"].values[0])
@@ -80,7 +80,6 @@ def product_seasonal_comp(input_df, matnr=103029):
                 outlier = False
         elif frequency < 12:
             outlier = False
-
         if outlier:
             _result = ma_replace_outlier(data=aggregated_data, n_pass=n_pass, aggressive=True, window_size=window_size,
                                          sigma=sigma)
@@ -92,19 +91,18 @@ def product_seasonal_comp(input_df, matnr=103029):
         if k == 0:
             final = result
             k = 1
-
     try:
         final = final.groupby("dt_week")["quantity"].sum().reset_index()
     except:
         return None
     final = final.set_index("dt_week")
     final.to_csv("/home/aman/PycharmProjects/seasonality_hypothesis/aggregated.csv")
-    plt.plot(final, marker=".")
-    plt.title("aggregated")
-    plt.show()
+    # plt.plot(final, marker=".")
+    # plt.title("aggregated")
+    # plt.show()
     stl = decompose(final, period=52)
-    stl.plot()
-    plt.show()
+    # stl.plot()
+    # plt.show()
     # result = seasonal_decompose(final["quantity"], model="additive")
     # result.plot()
     # plt.show()
@@ -128,9 +126,9 @@ def product_seasonal_comp_5_point(df, matnr):
 
 def product_seasonal_comp_7_point(df, matnr):
     input_df = product_seasonal_comp(df, matnr)
-    plt.plot(input_df, marker=".")
-    plt.title("original")
-    plt.show()
+    # plt.plot(input_df, marker=".")
+    # plt.title("original")
+    # plt.show()
     input_df = input_df.reset_index().copy()
     max_index = input_df.shape[0] - 1
     df_copy = input_df.copy()
@@ -149,7 +147,7 @@ def product_seasonal_comp_7_point(df, matnr):
 
 if __name__=="__main__":
     df = load_data()
-    matnr = 101728
+    matnr = 112260
     temp = product_seasonal_comp_7_point(df, matnr).reset_index()
     plt.plot(temp.set_index("dt_week"), marker=".")
     plt.title("smoothened")

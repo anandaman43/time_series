@@ -7,9 +7,13 @@ import statsmodels.api as sm
 pd.set_option('display.max_columns', 10)
 
 
+# def load_data():
+#     df = pd.read_csv("/home/aman/Desktop/CSO_drug/data/raw_invoices_cleaveland_sample_100_stores_2018-12-09.tsv",
+#                      sep="\t")
+#     return df
 def load_data():
-    df = pd.read_csv("/home/aman/Desktop/CSO_drug/data/raw_invoices_cleaveland_sample_100_stores_2018-12-09.tsv",
-                     sep="\t")
+    df = pd.read_csv("/home/aman/Desktop/CSO_drug/data/4200_C005_raw_invoices_2019-01-06.tsv",
+                     names=["kunag", "matnr", "date", "quantity", "price"])
     return df
 
 
