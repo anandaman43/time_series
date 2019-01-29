@@ -65,5 +65,11 @@ def function1(df, kunag, matnr):
 
 df = load_data()
 sample = pd.read_csv("/home/aman/PycharmProjects/seasonality_hypothesis/data_generated/bucket_1_sample.csv")
+i = 0
 for index, row in tqdm(sample.iterrows()):
-    function1(df, int(row["kunag"]), int(row["matnr"]))
+    i += 1
+    if i<=237:
+        continue
+    try:function1(df, int(row["kunag"]), int(row["matnr"]))
+    except:pass
+    break

@@ -4,7 +4,6 @@ import pandas as pd
 from selection import load_data
 from outlier import ma_replace_outlier
 from dateutil import parser
-df = load_data()
 df_series = individual_series(df)
 train = splitter_2(df_series)[0]
 _testing = train[["quantity", "dt_week"]].copy()

@@ -146,6 +146,29 @@ def product_seasonal_comp_7_point(df, matnr):
     return output_df
 
 
+def product_seasonal_comp_9_point(df, matnr):
+    input_df = product_seasonal_comp(df, matnr)
+    plt.figure(figsize=(16, 8))
+    plt.plot(input_df, marker=".")
+    # plt.show()
+    input_df = input_df.reset_index().copy()
+    max_index = input_df.shape[0] - 1
+    df_copy = input_df.copy()
+    for i in range(0, max_index-7):
+        mean = input_df.iloc[i:i+9]["quantity"].mean()
+        df_copy["quantity"].iloc[i+4] = mean
+    df_copy["quantity"].iloc[0] = df_copy.iloc[0+52]["quantity"]
+    df_copy["quantity"].iloc[1] = df_copy.iloc[1+52]["quantity"]
+    df_copy["quantity"].iloc[2] = df_copy.iloc[2+52]["quantity"]
+    df_copy["quantity"].iloc[3] = df_copy.iloc[3+52]["quantity"]
+    df_copy["quantity"].iloc[-1] = df_copy.iloc[-1-52]["quantity"]
+    df_copy["quantity"].iloc[-2] = df_copy.iloc[-2-52]["quantity"]
+    df_copy["quantity"].iloc[-3] = df_copy.iloc[-3-52]["quantity"]
+    df_copy["quantity"].iloc[-4] = df_copy.iloc[-4-52]["quantity"]
+    output_df = df_copy.set_index("dt_week")
+    return output_df
+
+
 if __name__=="__main__":
     df = load_data()
     sample = pd.read_csv("/home/aman/PycharmProjects/seasonality_hypothesis/data_generated/bucket_1_sample.csv")
@@ -154,12 +177,12 @@ if __name__=="__main__":
 
     for index, row in sample.iterrows():
         matnr = int(row["matnr"])
-        temp = product_seasonal_comp_7_point(df, matnr).reset_index()
+        temp = product_seasonal_comp_9_point(df, matnr).reset_index()
         product_name = product[product["matnr"] == str(matnr)]["description"].values[0]
-        plt.figure(figsize=(16, 8))
-        plt.plot(temp.set_index("dt_week"), marker=".")
+        # plt.figure(figsize=(16, 8))
+        # plt.plot(temp.set_index("dt_week"), marker=".")
         plt.title(product_name)
-        plt.savefig("/home/aman/PycharmProjects/seasonality_hypothesis/smoothened_sea_component/"+str(matnr)+"__"+product_name+".png")
+        plt.savefig("/home/aman/PycharmProjects/seasonality_hypothesis/seasonal_component/"+str(matnr)+"__"+product_name+".png")
     # for i in range(0, 30):
     #     print(temp.iloc[i]["quantity"], temp.iloc[i+52]["quantity"])
     # plt.plot(product_seasonal_comp(df, matnr), marker=".")
