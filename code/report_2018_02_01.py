@@ -18,7 +18,7 @@ for index, row in sample.iterrows():
     kunag = int(row["kunag"])
     matnr = int(row["matnr"])
     try:
-        seas_pres = ljung_box_test(df, int(row["matnr"]))
+        seas_pres = ljung_box_test(df, int(row["matnr"]))[0]
         if not seas_pres:
             continue
         else:
@@ -37,7 +37,7 @@ for index, row in sample.iterrows():
             norm_error = pow(mean_squared_error(result_2.iloc[-16:]["quantity"], result_2.iloc[-16:]["prediction"]), 0.5)
             plt.title("seas_error: " + str(seas_error) + "  norm_error: " + str(norm_error))
             plt.legend()
-            plt.savefig("/home/aman/PycharmProjects/seasonality_hypothesis/report_2018_02_04/"
+            plt.savefig("/home/aman/PycharmProjects/seasonality_hypothesis/report_2018_02_05/"
                         + str(kunag) + "_" + str(matnr) + "_" + str(dtw_flag) + ".png")
             report = report.append([[kunag, matnr, seas_pres, dtw_flag, seas_error, norm_error]])
     except:
@@ -45,6 +45,6 @@ for index, row in sample.iterrows():
     count += 1
     print(count)
 report.columns = ["kunag", "matnr", "seasonality", "dtw_flag", "seas_error", "norm_error"]
-report.to_csv("/home/aman/PycharmProjects/seasonality_hypothesis/report_2018_02_04/report_2018_02_04.csv")
+report.to_csv("/home/aman/PycharmProjects/seasonality_hypothesis/report_2018_02_05/report_2018_02_05.csv")
     # except:
     #     pass

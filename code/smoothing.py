@@ -34,6 +34,15 @@ def smoothing_5_new(df):
     return df_copy.iloc[2:-2]
 
 
+def smoothing_7_new(df):
+    df_copy = df.copy()
+    max_index = df.shape[0] - 1
+    for i in range(0, max_index-5):
+        mean = df.iloc[i:i+7]["quantity"].mean()
+        df_copy["quantity"].iloc[i+3] = mean
+    return df_copy.iloc[3:-3]
+
+
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
     data = pd.read_csv(

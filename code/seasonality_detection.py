@@ -29,10 +29,14 @@ def monthly_aggregate(detrended_df, period=4):
         output_df["quantity"].loc[i] = input_df.iloc[i:i+period]["quantity"].sum()
         output_df = output_df.drop(list(range(i + 1, i + period)), axis=0)
     output_df = output_df.set_index("dt_week")
+    plt.plot(input_df.set_index("dt_week"), marker=".", label="before monthly aggregatation")
+    plt.plot(output_df, marker=".", label="monthly aggregate")
+    plt.legend()
+    plt.show()
     return output_df
 
 
-def detrend(input_df, order=18):
+def detrend(input_df, order=24):
     input_df_copy = input_df.copy()
     input_df_copy = input_df_copy.reset_index()
     length = input_df_copy.shape[0]
@@ -42,17 +46,151 @@ def detrend(input_df, order=18):
     output_df = output_df.iloc[order:length-order]
     output_df = output_df.set_index("dt_week")
     input_df_copy = input_df_copy.iloc[order:length-order].set_index("dt_week")
+    detrended = input_df_copy - output_df
     # print(input_df_copy)
     # print(output_df)
     # print(input_df_copy - output_df)
-    # plt.plot(output_df, marker=".")
-    # plt.title("trend")
-    # plt.show()
-    detrended = input_df_copy - output_df
+    plt.plot(input_df_copy, marker=".", label="before removing trend")
+    plt.plot(output_df, marker=".", label="trend")
+    plt.plot(detrended, marker=".", label="after removing trend")
+    plt.title("trend")
+    plt.legend()
+    plt.show()
+
     return detrended
 
 
+def outlier_on_aggregated(aggregated_df):
+    _testing = aggregated_df[["quantity", "dt_week"]].copy()
+    aggregated_data = _testing.rename(columns={'dt_week': 'ds', 'quantity': 'y'})
+
+    aggregated_data.ds = aggregated_data.ds.apply(str).apply(parser.parse)
+    aggregated_data.y = aggregated_data.y.apply(float)
+    aggregated_data = aggregated_data.sort_values('ds')
+    aggregated_data = aggregated_data.reset_index(drop=True)
+    n_pass = 3
+    window_size = 12
+    sigma = 3.0
+    _result = ma_replace_outlier(data=aggregated_data, n_pass=n_pass, aggressive=True, window_size=window_size,
+                                 sigma=sigma)
+    result = _result[0].rename(columns={'ds': 'dt_week', 'y': 'quantity'})
+    # plt.plot(result.set_index("dt_week")["quantity"], marker=".", label="after outlier")
+    # # plt.plot(result.set_index("dt_week").diff(), marker=".", label="differenced after outlier")
+    # plt.title("aggregated outlier removed")
+    # plt.show()
+    return result
+
+
 def ljung_box_test(input_df, matnr=112260):
+    """
+    This function aggregates whole cleaveland data with ma outliers removing different categories series outliers
+    First week has been removed
+    :return: pandas_df : seasonal component of the aggregated data
+    """
+    df = input_df.copy()
+    df = df[df["matnr"] == matnr]
+    overall = pd.read_csv(
+        "~/PycharmProjects/seasonality_hypothesis/data_generated/frequency_days_4200_C005.csv")
+    overall = overall[overall["matnr"] == matnr]
+    #product = pd.read_csv("~/PycharmProjects/seasonality_hypothesis/data/material_list.tsv", sep="\t")
+    #product_name = product[product["matnr"] == str(int(matnr))]["description"].values[0]
+    k = 0
+    for index, row in overall.iterrows():
+        frequency = row["frequency"]
+        days = row["days"]
+        df_series = df[(df["kunag"] == row["kunag"]) & (df["matnr"] == row["matnr"])]
+        df_series = df_series[df_series["quantity"] >= 0]
+        df_series = df_series[df_series["date"] >= 20160703]
+        if frequency == 0:
+            continue
+        #print(df_series)
+        df_series = get_weekly_aggregate(df_series)
+        # plt.plot(df_series.set_index("dt_week")["quantity"], marker=".", label="individual series")
+        # plt.title(str(row["matnr"]) + " before outlier")
+        # plt.show()
+        _testing = df_series[["quantity", "dt_week"]].copy()
+        aggregated_data = _testing.rename(columns={'dt_week': 'ds', 'quantity': 'y'})
+
+        aggregated_data.ds = aggregated_data.ds.apply(str).apply(parser.parse)
+        aggregated_data.y = aggregated_data.y.apply(float)
+        aggregated_data = aggregated_data.sort_values('ds')
+        aggregated_data = aggregated_data.reset_index(drop=True)
+        outlier = True
+        if (frequency >= 26) & (days > 365 + 183):
+            n_pass = 3
+            window_size = 12
+            sigma = 4.0
+        elif(frequency >= 20) & (frequency < 26):
+            n_pass = 3
+            window_size = 12
+            sigma = 5.0
+        elif (frequency >= 26) & (days <= 365+183):
+            if len(aggregated_data) >= 26:
+                n_pass = 3
+                window_size = 12
+                sigma = 4.0
+            else:
+                outlier = False
+        elif (frequency >= 12) & (frequency < 20):
+            if len(aggregated_data) >= 26:
+                n_pass = 3
+                window_size = 24
+                sigma = 5.0
+            else:
+                outlier = False
+        elif frequency < 12:
+            outlier = False
+
+        if outlier:
+            _result = ma_replace_outlier(data=aggregated_data, n_pass=n_pass, aggressive=True, window_size=window_size,
+                                         sigma=sigma)
+            result = _result[0].rename(columns={'ds': 'dt_week', 'y': 'quantity'})
+        else:
+            result = aggregated_data.rename(columns={'ds': 'dt_week', 'y': 'quantity'})
+        # plt.plot(result.set_index("dt_week")["quantity"], marker=".", label="individual_series_after_outlier")
+        # plt.title(str(row["matnr"]) + " after outlier")
+        # plt.show()
+        if k == 1:
+            final = pd.concat([final, result])
+        if k == 0:
+            final = result
+            k = 1
+    final = final.groupby("dt_week")["quantity"].sum().reset_index()
+    # plt.figure(figsize=(16, 8))
+    # plt.plot(final.set_index("dt_week"), marker=".", label="aggregated_data")
+    # plt.plot(final.set_index("dt_week").diff(), marker=".", label="differenced aggregated_data")
+    # plt.title("aggregated_data")
+    # plt.legend()
+    # plt.show()
+    final = outlier_on_aggregated(final)
+
+    final = final.set_index("dt_week")
+    #temp = final
+    # final = final.diff()
+    final, Flag = cond_check(final)
+    if Flag:
+        final_detrended = detrend(final)
+        # plt.plot(final_detrended, marker=".")
+        # plt.title("detrended")
+        # plt.show()
+        final_aggregate = monthly_aggregate(final_detrended)
+        # plt.figure(figsize=(16, 8))
+        # plt.plot(final_aggregate, marker=".")
+        print("standard deviation is", final.std()/ final.mean())
+        result = acorr_ljungbox(final_aggregate["quantity"], lags=[13])
+        result_dickey = adfuller(final_aggregate["quantity"])
+        # print("statistic: %f" %result[0])
+        # print("p-value: %f" %result[1])
+        if result[1] < 0.01:
+            #print(result[1])
+            return True, result[1], result_dickey[1], final
+        else:
+            return False, result[1], result_dickey[1], final
+    else:
+        print("length of series is less than 112")
+
+
+def ljung_box_test_without_aggregation(input_df, matnr=112260):
     """
     This function aggregates whole cleaveland data with ma outliers removing different categories series outliers
     First week has been removed
@@ -122,29 +260,14 @@ def ljung_box_test(input_df, matnr=112260):
             k = 1
     final = final.groupby("dt_week")["quantity"].sum().reset_index()
     final = final.set_index("dt_week")
-    #temp = final
-    # plt.figure(figsize=(16, 8))
-    # plt.plot(final, marker=".")
-    # plt.show()
-    final, Flag = cond_check(final)
-    if Flag:
-        final_detrended = detrend(final)
-        # plt.plot(final_detrended, marker=".")
-        # plt.title("detrended")
-        # plt.show()
-        final_aggregate = monthly_aggregate(final_detrended)
-        # plt.figure(figsize=(16, 8))
-        # plt.plot(final_aggregate, marker=".")
-        result = acorr_ljungbox(final_aggregate["quantity"], lags=[13])
+    result = acorr_ljungbox(final["quantity"], lags=[52])
         # print("statistic: %f" %result[0])
         # print("p-value: %f" %result[1])
-        if result[1] < 0.01:
-            #print(result[1])
-            return True
-        else:
-            return False
+    if result[1] < 0.01:
+        #print(result[1])
+        return True, result[1], final
     else:
-        print("length of series is less than 112")
+        return False, result[1], final
 
 
 if __name__ == "__main__":
@@ -152,7 +275,7 @@ if __name__ == "__main__":
     # df = pd.read_csv("/home/aman/PycharmProjects/seasonality_hypothesis/data/4200_C005_raw_invoices_2019-01-06.tsv",
     #                  names=["kunag", "matnr", "date", "quantity", "price"])
     df = load_data()
-    print(ljung_box_test(df, matnr=132530))
+    ljung_box_test(df, matnr=117603)
     # import os
     # dir = "/home/aman/PycharmProjects/seasonality_hypothesis/older_plots/plots_product_aggregate/"
     # for i in os.listdir((dir)):

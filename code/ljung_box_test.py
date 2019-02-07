@@ -61,7 +61,7 @@ def ljung_box_test(input_df, matnr=112260):
     df = input_df.copy()
     df = df[df["matnr"] == matnr]
     overall = pd.read_csv(
-        "~/PycharmProjects/seasonality_hypothesis/data_generated/frequency_days_cleaveland.csv")
+        "~/PycharmProjects/seasonality_hypothesis/data_generated/frequency_days_4200_C005.csv")
     overall = overall[overall["matnr"] == matnr]
     product = pd.read_csv("~/PycharmProjects/seasonality_hypothesis/data/material_list.tsv", sep="\t")
     product_name = product[product["matnr"] == str(matnr)]["description"].values[0]
