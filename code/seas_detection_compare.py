@@ -22,12 +22,12 @@ for matnr in sample["matnr"].unique():
     plt.plot(seas_pres_1[3], marker=".", label="aggregated")
     plt.legend()
     plt.title("ljung p_value: " + str(seas_pres_1[1]) + "  dickey p_value: " + str(seas_pres_1[2]))
-    plt.savefig("/home/aman/PycharmProjects/seasonality_hypothesis/seas_detection_compare_2018_02_07_ver_1/"+str(matnr)+".png")
+    plt.savefig("/home/aman/PycharmProjects/seasonality_hypothesis/seas_detection_compare_2018_02_08_ver_1/"+str(matnr)+".png")
     result = result.append([[matnr, seas_pres_1[1][0], seas_pres_1[2]]])
     print(count)
     count += 1
 result.columns = ["matnr", "ljung_p__value", "dickey_p__value"]
-result.to_csv("/home/aman/PycharmProjects/seasonality_hypothesis/seas_detection_compare_2018_02_07_ver_1/result.csv", index=False)
+result.to_csv("/home/aman/PycharmProjects/seasonality_hypothesis/seas_detection_compare_2018_02_08_ver_1/result.csv", index=False)
 #         if not seas_pres:
 #             continue
 #         else:

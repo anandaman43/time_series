@@ -52,6 +52,7 @@ def arima_seasonality_added_rolling(input_df, seasonality):
         else:
             train_copy = input_df.copy().iloc[0:]
         train, validation, test = splitter_moving(train_copy)
+        # order = (0, 1, 1)
         mse1, output_1 = arima_mse_seasonality_added(train, validation, seasonality, (0, 1, 1))
         mse2, output_2 = arima_mse_seasonality_added(train, validation, seasonality, (0, 2, 2))
         mse3, output_3 = arima_mse_seasonality_added(train, validation, seasonality, (0, 1, 2))
@@ -62,6 +63,56 @@ def arima_seasonality_added_rolling(input_df, seasonality):
         else:
             order = (0, 1, 2)
         mse, output = arima_mse_seasonality_added(pd.concat([train, validation]), test, seasonality,  order)
+        if i == 15:
+            output_test = pd.concat([train, validation])
+            output_test["prediction"] = output_test["quantity"]
+        output_test = pd.concat([output_test, pd.DataFrame(output.iloc[-1]).T])
+    return output_test
+
+
+def arima_seasonality_added_rolling_011(input_df, seasonality):
+    for i in range(15, -1, -1):
+        if i > 0:
+            train_copy = input_df.copy().iloc[0:-i]
+        else:
+            train_copy = input_df.copy().iloc[0:]
+        train, validation, test = splitter_moving(train_copy)
+        order = (0, 1, 1)
+        # mse1, output_1 = arima_mse_seasonality_added(train, validation, seasonality, (0, 1, 1))
+        # mse2, output_2 = arima_mse_seasonality_added(train, validation, seasonality, (0, 2, 2))
+        # mse3, output_3 = arima_mse_seasonality_added(train, validation, seasonality, (0, 1, 2))
+        # if (mse1 <= mse2) & (mse1 <= mse3):
+        #     order = (0, 1, 1)
+        # elif mse2 <= mse3:
+        #     order = (0, 2, 2)
+        # else:
+        #     order = (0, 1, 2)
+        mse, output = arima_mse_seasonality_added(pd.concat([train, validation]), test, seasonality, order)
+        if i == 15:
+            output_test = pd.concat([train, validation])
+            output_test["prediction"] = output_test["quantity"]
+        output_test = pd.concat([output_test, pd.DataFrame(output.iloc[-1]).T])
+    return output_test
+
+
+def arima_seasonality_added_rolling_022(input_df, seasonality):
+    for i in range(15, -1, -1):
+        if i > 0:
+            train_copy = input_df.copy().iloc[0:-i]
+        else:
+            train_copy = input_df.copy().iloc[0:]
+        train, validation, test = splitter_moving(train_copy)
+        order = (0, 2, 2)
+        # mse1, output_1 = arima_mse_seasonality_added(train, validation, seasonality, (0, 1, 1))
+        # mse2, output_2 = arima_mse_seasonality_added(train, validation, seasonality, (0, 2, 2))
+        # mse3, output_3 = arima_mse_seasonality_added(train, validation, seasonality, (0, 1, 2))
+        # if (mse1 <= mse2) & (mse1 <= mse3):
+        #     order = (0, 1, 1)
+        # elif mse2 <= mse3:
+        #     order = (0, 2, 2)
+        # else:
+        #     order = (0, 1, 2)
+        mse, output = arima_mse_seasonality_added(pd.concat([train, validation]), test, seasonality, order)
         if i == 15:
             output_test = pd.concat([train, validation])
             output_test["prediction"] = output_test["quantity"]

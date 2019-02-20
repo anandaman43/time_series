@@ -15,7 +15,7 @@ data = data.sort_values("d")
 
 
 def sigmoid(s):
-    if s>=0:
+    if s >= 0:
         return 1
     else:
         return 0

@@ -30,7 +30,7 @@ def dtw_check(df, kunag, matnr, threshold=0.18):
 if __name__=="__main__":
 
     df = load_data()
-    print(dtw_check(df, 500083147, 135573))
+    print(dtw_check(df, 500056565, 112309))
     # path = "/home/aman/PycharmProjects/seasonality_hypothesis/stl_plots_seasonality_108_7_point_thresh_0.01"
     # result = pd.DataFrame()
     # count = 0
