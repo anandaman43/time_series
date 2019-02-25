@@ -23,12 +23,11 @@ for index, row in sample.iterrows():
     matnr = int(row["matnr"])
     seas_pres = ljung_box_test(df, int(row["matnr"]))
     if not seas_pres[0]:
-        count +=1
+        count += 1
         print(count)
         continue
     else:
         dtw_flag = dtw_check(df, kunag, matnr)
-        """
         seasonality_product = product_seasonal_comp_7_point(df, matnr)
         df_series = individual_series(df, kunag, matnr)
         result_1 = arima_seasonality_added_rolling(df_series, seasonality_product)
@@ -71,7 +70,7 @@ for index, row in sample.iterrows():
         plt.show()
         #plt.savefig("/home/aman/PycharmProjects/seasonality_hypothesis/report_2018_02_18/"
                  #   + str(kunag) + "_" + str(matnr) + "_" + str(dtw_flag) + ".png")
-                 """
+
         seas_error = 0
         norm_error = 0
         report = report.append([[kunag, matnr, seas_pres[1][0], dtw_flag[1], seas_error, norm_error]])
@@ -79,6 +78,6 @@ for index, row in sample.iterrows():
     count += 1
     print(count)
 report.columns = ["kunag", "matnr", "seasonality", "dtw_flag", "seas_error", "norm_error"]
-report.to_csv("/home/aman/PycharmProjects/seasonality_hypothesis/report_2018_02_18/report_2018_02_18.csv")
+report.to_csv("/home/aman/PycharmProjects/seasonality_hypothesis/report_2018_02_25/report_2018_02_25.csv")
     # except:
     #     pass
