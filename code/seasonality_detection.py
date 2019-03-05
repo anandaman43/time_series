@@ -324,12 +324,15 @@ def ljung_box_test_without_aggregation(input_df, matnr=112260):
 def missing_data_detection(final):
     value_counts = final["quantity"].value_counts()
     value_more_than_24 = value_counts[value_counts >= 24].index
+    final = final.reset_index()
     flag = False
     for value in value_more_than_24:
-        final_subset = final[final["quantity"] == value].index
-        max_diff_in_week = (final_subset[-1] - final_subset[0]).days/7
-        if max_diff_in_week >= 24:
+        final = final[final["quantity"] != value]
+        final = final["dt_week"].diff()
+        count = (final >= pd.Timedelta(168, unit="D")).sum()
+        if count >= 1:
             flag = True
+            print("data is missing")
     return flag
 
 
@@ -338,7 +341,7 @@ if __name__ == "__main__":
     # df = pd.read_csv("/home/aman/PycharmProjects/seasonality_hypothesis/data/4200_C005_raw_invoices_2019-01-06.tsv",
     #                  names=["kunag", "matnr", "date", "quantity", "price"])
     df = load_data()
-    ljung_box_test(df, matnr=152013)
+    # ljung_box_test(df, matnr=134923)
     # import os
     # dir = "/home/aman/PycharmProjects/seasonality_hypothesis/older_plots/plots_product_aggregate/"
     # for i in os.listdir((dir)):
@@ -346,3 +349,8 @@ if __name__ == "__main__":
     #         dickey_fuller_test(df, matnr=int(i.split("_")[0]))
     #     except:
     #         pass
+
+    data = pd.read_csv("/home/aman/PycharmProjects/seasonality_hypothesis/new_seasonality_code_check/result.csv")
+    for index, row in data.iterrows():
+        print(row["matnr"])
+        ljung_box_test(df, matnr=row["matnr"])
