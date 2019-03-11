@@ -139,9 +139,34 @@ def product_seasonal_comp_7_point(df, matnr):
     return output_df
 
 
+def seasonality_expansion(df_series, seasonality):
+    """
+    expand the seasonality for customer-material data
+    :param df_series:
+    :param seasonality:
+    :return: expanded seasonality
+    """
+    df_series_copy = df_series.copy().set_index("dt_week")
+    seasonality_copy = seasonality.copy()
+    seasonality_copy.columns = ["seasonal_quantity"]
+    seasonality_copy = pd.concat([df_series_copy, seasonality_copy], axis=1)
+    seasonality_copy = seasonality_copy.reset_index()
+    start_iloc, end_iloc = seasonality_copy.dropna(subset=["seasonal_quantity"]).index[0], seasonality_copy.dropna(subset=["seasonal_quantity"]).index[-1]
+    # print(start_iloc, end_iloc)
+    for i in range(start_iloc-1, -1, -1):
+        # print(seasonality_copy["seasonal_quantity"].iloc[i + 52])
+        seasonality_copy["seasonal_quantity"].iloc[i] = seasonality_copy.iloc[i + 52]["seasonal_quantity"]
+    for i in range(end_iloc + 1, df_series.shape[0]):
+        seasonality_copy["seasonal_quantity"].iloc[i] = seasonality_copy.iloc[i - 52]["seasonal_quantity"]
+    seasonality_expanded = seasonality_copy[["dt_week", "seasonal_quantity"]]
+    seasonality_expanded.columns = ["dt_week", "quantity"]
+    seasonality_expanded = seasonality_expanded.set_index("dt_week")
+    return seasonality_expanded
+
+
 if __name__=="__main__":
     df = load_data()
-    matnr = 112260
+    matnr = 119827
     temp = product_seasonal_comp_7_point(df, matnr).reset_index()
     plt.plot(temp.set_index("dt_week"), marker=".")
     plt.title("smoothened")
