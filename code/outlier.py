@@ -208,13 +208,17 @@ def ma_replace_outlier(data, n_pass=2, aggressive=True, window_size = 12, sigma 
                 q = p[0]
                 r = q+1
                 s = q+2
-
+                print(x)
+                print(nz)
+                print(nz[r] - nz[q])
+                print(row)
                 data_ma = data.loc[:nz[q],'y'].shift().rolling(window=window_size, min_periods=4).mean()
                 data_ma.fillna(value=0, inplace=True)
                 a = data_ma.values[-1]
-
+                print(a)
                 if row['y'] > a:
                     if (r < nz.size):
+                        print(nz[r] - nz[q])
                         if(nz[r] - nz[q] >= 1):
                             data.loc[nz[q]:nz[r]-1, 'y'] = a
                     else:

@@ -12,7 +12,7 @@ pd.set_option('display.max_columns', 10)
 #                      sep="\t")
 #     return df
 def load_data():
-    df = pd.read_csv("/home/aman/Desktop/CSO_drug/data/4200_C005_raw_invoices_2019-01-06.tsv",
+    df = pd.read_csv("/home/aman/PycharmProjects/seasonality_hypothesis/data/4200_C005_raw_invoices_2019-01-06.tsv",
                      names=["kunag", "matnr", "date", "quantity", "price"])
     return df
 
@@ -89,7 +89,7 @@ def outlier(df_series):
     aggregated_data = aggregated_data.sort_values('ds')
     aggregated_data = aggregated_data.reset_index(drop=True)
 
-    _result = ma_replace_outlier(data=aggregated_data, n_pass=3, aggressive=True, window_size=12, sigma=3.0)
+    _result = ma_replace_outlier(data=aggregated_data, n_pass=3, aggressive=True, window_size=24, sigma=5.0)
     result = _result[0].rename(columns={'ds': 'dt_week', 'y': 'quantity'})
     return result
 
@@ -99,8 +99,10 @@ if __name__ == "__main__":
     from statsmodels.tsa.seasonal import seasonal_decompose
     import statsmodels.api as sm
     df = load_data()
-    df = remove_negative_rows(df)
-    df_series = individual_series(df)
-    print(df_series.head())
-    print(validation_preprocess(df_series.head()))
+    print(df["kunag"].unique())
+    print(len(df["kunag"].unique()))
+    # df = remove_negative_rows(df)
+    # df_series = individual_series(df)
+    # print(df_series.head())
+    # print(validation_preprocess(df_series.head()))
 

@@ -1,10 +1,12 @@
 import statsmodels.api as sm
 import pandas as pd
 from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_absolute_error
 #from aggregate import overall_aggregate_seas_5_point
 from hypothesis import arima_mse
 from hypothesis import arima
 from hypothesis import arima_mse_seasonality_added
+from seasonality import seasonality_expansion
 
 
 def splitter_moving(input_df):
@@ -45,7 +47,33 @@ def arima_rolling(input_df):
     return output_test
 
 
+def arima_rolling_011(input_df):
+    for i in range(15, -1, -1):
+        if i > 0:
+            train_copy = input_df.copy().iloc[0:-i]
+        else:
+            train_copy = input_df.copy().iloc[0:]
+        train, validation, test = splitter_moving(train_copy)
+        # mse1, output_1 = arima_mse(train, validation, (0, 1, 1))
+        # mse2, output_2 = arima_mse(train, validation, (0, 2, 2))
+        # mse3, output_3 = arima_mse(train, validation, (0, 1, 2))
+        # if (mse1 <= mse2) & (mse1 <= mse3):
+        #     order = (0, 1, 1)
+        # elif mse2 <= mse3:
+        #     order = (0, 2, 2)
+        # else:
+        #     order = (0, 1, 2)
+        order = (0, 1, 1)
+        mse, output = arima_mse(pd.concat([train, validation]), test, order)
+        if i == 15:
+            output_test = pd.concat([train, validation])
+            output_test["prediction"] = output_test["quantity"]
+        output_test = pd.concat([output_test, pd.DataFrame(output.iloc[-1]).T])
+    return output_test
+
+
 def arima_seasonality_added_rolling(input_df, seasonality):
+    count_011 = count_012 = count_022 = 0
     for i in range(15, -1, -1):
         if i > 0:
             train_copy = input_df.copy().iloc[0:-i]
@@ -63,14 +91,24 @@ def arima_seasonality_added_rolling(input_df, seasonality):
         else:
             order = (0, 1, 2)
         mse, output = arima_mse_seasonality_added(pd.concat([train, validation]), test, seasonality,  order)
+
+        if order == (0, 1, 1):
+            count_011 += 1
+        elif order == (0, 1, 2):
+            count_012 += 1
+        else:
+            count_022 += 1
         if i == 15:
             output_test = pd.concat([train, validation])
             output_test["prediction"] = output_test["quantity"]
         output_test = pd.concat([output_test, pd.DataFrame(output.iloc[-1]).T])
-    return output_test
+    return output_test, (count_011, count_012,count_022)
 
 
 def arima_seasonality_added_rolling_011(input_df, seasonality):
+    seasonality.to_csv("check1.csv")
+    seasonality = seasonality_expansion(input_df, seasonality)
+    seasonality.to_csv("check2.csv")
     for i in range(15, -1, -1):
         if i > 0:
             train_copy = input_df.copy().iloc[0:-i]

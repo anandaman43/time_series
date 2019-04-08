@@ -1,6 +1,7 @@
 import statsmodels.api as sm
 import pandas as pd
 from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_absolute_error
 #from aggregate import overall_aggregate_seas_5_point
 
 

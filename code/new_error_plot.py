@@ -13,6 +13,7 @@ from sklearn.metrics import mean_absolute_error
 import matplotlib.pyplot as plt
 import time
 import os
+from local_error import local_rmse
 
 
 def moving_average(input_df, order=12):
@@ -25,8 +26,9 @@ def moving_average(input_df, order=12):
 
 def moving_average_with_seasonality(input_df, product_seasonal_comp_7_point, order=36):
     input_df_copy = input_df.copy().set_index("dt_week")
-    product_seasonal_comp_7_point.columns = ["seasonal_quantity"]
-    input_df_copy = pd.concat([input_df_copy, product_seasonal_comp_7_point], axis=1).dropna(subset=["quantity"])
+    seasonality_component_copy = product_seasonal_comp_7_point.copy()
+    seasonality_component_copy.columns = ["seasonal_quantity"]
+    input_df_copy = pd.concat([input_df_copy, seasonality_component_copy], axis=1).dropna(subset=["quantity"])
     min_seasonal_value = input_df_copy["seasonal_quantity"].min()
     # print(min_seasonal_value)
     input_df_copy["seasonal_quantity"] = input_df_copy["seasonal_quantity"] + abs(min_seasonal_value*2)
@@ -60,7 +62,7 @@ def moving_average_available(input_df, product_product_seasonal_comp_7_point, or
 
 
 project = "/home/aman/PycharmProjects/seasonality_hypothesis/"
-folder = "category_8"
+folder = "local_error"
 file = "report.csv"
 folder_address = os.path.join(project, folder)
 file_address = os.path.join(folder_address, file)
@@ -73,9 +75,9 @@ frequency_cleaveland = pd.read_csv(
 # bucket_1_sample.to_csv(
 #     "/home/aman/PycharmProjects/seasonality_hypothesis/data_generated/bucket_1_sample.csv", index=False)
 sample = frequency_cleaveland[(frequency_cleaveland["frequency"] >= 20) & (frequency_cleaveland["frequency"] < 26)
-                              & (frequency_cleaveland["days"] < 365 + 183) & (frequency_cleaveland["days"] > 365)]
+                              & (frequency_cleaveland["days"] <= 731 + 183) & (frequency_cleaveland["days"] > 365 + 183)]
 print("Number of combos: ", sample.shape[0])
-sample = sample.sample(300, random_state=1)
+sample = sample.sample(400, random_state=1)
 sample.to_csv(folder_address+"/sample.csv")
 sample = pd.read_csv(folder_address+"/sample.csv")
 report = pd.DataFrame()
@@ -96,57 +98,53 @@ for index, row in sample.iterrows():
         test1 = False
         test2 = False
     df_series = individual_series(df, kunag, matnr)
-    if test1_flag:
-        seasonality_component = product_seasonal_comp_7_point(df, matnr)
-        # result_52 = moving_average_with_seasonality(df_series, seasonal_component, order=52)
-        # result_06 = moving_average(df_series, order=6)
-        result = arima_rolling_011(df_series)
-        result_seasonal = arima_seasonality_added_rolling_011(df_series, seasonality_component)
-        error_result = pow(mean_squared_error(df_series["quantity"].iloc[-16:],
-                                              result["prediction"].iloc[-16:]), 0.5)
-        error_result_seasonal = pow(mean_squared_error(df_series["quantity"].iloc[-16:],
-                                                       result_seasonal["prediction"].iloc[-16:]), 0.5)
-        report = report.append([[kunag, matnr, test1_flag, test1_pvalue, test2_flag, test2_value, error_result,
-                                 error_result_seasonal]])
-        report.to_csv(file_address, index=False)
-        count += 1
-        print("count: ", count)
+    if not test2_flag:
+        # seasonality_component = product_seasonal_comp_7_point(df, matnr)
+        # result_52_seasonal = moving_average_with_seasonality(df_series, seasonality_component, order=52)
+        result_09 = moving_average(df_series, order=9)
+        result_011 = arima_rolling_011(df_series)
+        # result_seasonal = arima_seasonality_added_rolling_011(df_series, seasonality_component)
+        error_result_09 = pow(mean_squared_error(df_series["quantity"].iloc[-16:],
+                                              result_09["prediction"].iloc[-16:]), 0.5)
+        error_result_011 = pow(mean_squared_error(df_series["quantity"].iloc[-16:],
+                                                       result_011["prediction"].iloc[-16:]), 0.5)
+        local_error_09 = local_rmse(result_09["prediction"].iloc[-16:].values, df_series["quantity"].iloc[-16:].values)
+        local_error_011 = local_rmse(result_011["prediction"].iloc[-16:].values, df_series["quantity"].iloc[-16:].values)
+        # report = report.append([[kunag, matnr, test1_flag, test1_pvalue, test2_flag, test2_value,
+        #                          error_result_09, error_result_011]])
+        # report.to_csv(file_address, index=False)
+        # count += 1
+        # print("count: ", count)
         df_series = df_series.set_index("dt_week")
         plt.figure(figsize=(16, 8))
-        plt.subplot(311)
-
+        # plt.subplot(311)
         plt.plot(df_series, marker=".", markerfacecolor="red", label="actual")
-        plt.plot(result.set_index("dt_week").iloc[-16:]["prediction"], marker=".", markerfacecolor="red",
-                 label="normal_011_" + str(error_result))
-        plt.plot(result_seasonal.set_index("dt_week").iloc[-16:]["prediction"], marker=".", markerfacecolor="red",
-                 label="seasonal_011_" + str(error_result_seasonal))
+        plt.plot(result_09.set_index("dt_week").iloc[-16:]["prediction"], marker=".", markerfacecolor="red",
+                 label="order_12_" + str(error_result_09) + "_" + str(local_error_09))
+        plt.plot(result_011.set_index("dt_week").iloc[-16:]["prediction"], marker=".", markerfacecolor="red",
+                 label="arima_011_" + str(error_result_011) + "_" + str(local_error_011))
         plt.xlabel("Date", fontsize=14)
         plt.ylabel("Quantity", fontsize=14)
         plt.legend()
-        plt.subplot(312)
-        plt.plot(aggregated_product.set_index("dt_week")["quantity"], marker=".", markerfacecolor="red", label="aggregated")
-        plt.xlabel("Date", fontsize=14)
-        plt.ylabel("Quantity", fontsize=14)
-        plt.legend()
-        plt.subplot(313)
-        plt.plot(seasonality_component["quantity"], marker=".", markerfacecolor="red", label="seasonality")
-        plt.xlabel("Date", fontsize=14)
-        plt.ylabel("Quantity", fontsize=14)
-        plt.legend()
-        # plt.show()
-        plt.title(str(test2_flag))
-        plt.savefig(folder_address + "/" + str(test2_flag) + "_" + str(kunag) + "_" + str(matnr)+".png")
-report.columns = ["kunag", "matnr", "test1_flag", "test1_pvalue", "test2_flag", "test2_value", "error_result",
-                  "error_result_seasonal"]
+        plt.show()
+        # plt.subplot(312)
+        # plt.plot(aggregated_product.set_index("dt_week")["quantity"], marker=".", markerfacecolor="red", label="aggregated")
+        # plt.xlabel("Date", fontsize=14)
+        # plt.ylabel("Quantity", fontsize=14)
+        # plt.legend()
+        # # plt.show()
+        # plt.title(str(test2_flag))
+        # plt.savefig(folder_address + "/" + str(test2_flag) + "_" + str(kunag) + "_" + str(matnr)+".png")
+# report.columns = ["kunag", "matnr", "test1_flag", "test1_pvalue", "test2_flag", "test2_value", "error_result_09",
+#                   "error_result_011"]
 
 # end = time.time()
 # print("time consumed :", (end - start) / 60, " minutes")
-report.to_csv(file_address, index=False)
+# report.to_csv(file_address, index=False)
 
 """              
 report = pd.read_csv(
     "/home/aman/PycharmProjects/seasonality_hypothesis/category_8/report.csv")
 report["min_order"] = report.apply(lambda x: x.argmin(x), axis=1)
 print(report["min_order"].value_counts())
-
 """

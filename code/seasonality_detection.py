@@ -182,8 +182,9 @@ def ljung_box_test(input_df, matnr=112260):
     # plt.legend(fontsize=14)
     # plt.show()
     final = outlier_on_aggregated(final)
-    # plt.figure(figsize=(16, 8))
-    # plt.plot(final.set_index("dt_week"), marker=".", markerfacecolor="red", label="y")
+    final_temp = final
+    plt.figure(figsize=(16, 8))
+    plt.plot(final.set_index("dt_week"), marker=".", markerfacecolor="red", label="y")
     # plt.plot(final.set_index("dt_week").diff(), marker=".", label="differenced aggregated_data")
     # plt.xticks(fontsize=14)
     # plt.yticks(fontsize=14)
@@ -191,12 +192,13 @@ def ljung_box_test(input_df, matnr=112260):
     # plt.ylabel("Quantity", fontsize=14)
     # plt.title("Product Weekly Aggregated Data Outlier Removed", fontsize=16)
     # plt.legend(fontsize=14)
-    # plt.show()
+    plt.show()
+    # print("________", final.dtypes)
     final = final.set_index("dt_week")
     missing_more_24 = missing_data_detection(final)
     if missing_more_24:
         # print("data is missing for more than 6 months")
-        return False, 1
+        return False, 1, 0, final, final_temp
     #temp = final
     # final = final.diff()
     # print("checking the length of aggregated series ...")
@@ -227,18 +229,20 @@ def ljung_box_test(input_df, matnr=112260):
         # print("standard deviation is", final.std()/ final.mean())
         # print("performing ljung box test ...")
         result = acorr_ljungbox(final_aggregate["quantity"], lags=[13])
+        # print(result)
         result_dickey = adfuller(final_aggregate["quantity"])
         # print("statistic: %f" %result[0])
         # print("p-value: %f" %result[1])
         # print("p_value is :", result[1][0])
         if result[1] < 0.02:
             # print(str(matnr)+" is seasonal")
-            return True, result[1], result_dickey[1], final
+            return True, result[1][0], result_dickey[1], final, final_temp
         else:
             # print(str(matnr) + " is not seasonal")
-            return False, result[1], result_dickey[1], final
+            return False, result[1][0], result_dickey[1], final, final_temp
     else:
         print("length of series is less than 112")
+        return [False, "length is small", 0, final, final_temp]
 
 
 def ljung_box_test_without_aggregation(input_df, matnr=112260):
@@ -312,6 +316,7 @@ def ljung_box_test_without_aggregation(input_df, matnr=112260):
     final = final.groupby("dt_week")["quantity"].sum().reset_index()
     final = final.set_index("dt_week")
     result = acorr_ljungbox(final["quantity"], lags=[52])
+
         # print("statistic: %f" %result[0])
         # print("p-value: %f" %result[1])
     if result[1] < 0.01:
@@ -328,8 +333,8 @@ def missing_data_detection(final):
     flag = False
     for value in value_more_than_24:
         final = final[final["quantity"] != value]
-        final = final["dt_week"].diff()
-        count = (final >= pd.Timedelta(168, unit="D")).sum()
+        final_2 = final["dt_week"].diff()
+        count = (final_2 >= pd.Timedelta(168, unit="D")).sum()
         if count >= 1:
             flag = True
             print("data is missing")
@@ -341,7 +346,9 @@ if __name__ == "__main__":
     # df = pd.read_csv("/home/aman/PycharmProjects/seasonality_hypothesis/data/4200_C005_raw_invoices_2019-01-06.tsv",
     #                  names=["kunag", "matnr", "date", "quantity", "price"])
     df = load_data()
-    # ljung_box_test(df, matnr=134923)
+    from MannKendallTrend.mk_test import mk_test
+    print(mk_test(ljung_box_test(df, matnr=103996)[-1]["quantity"]))
+    # print(ljung_box_test(df, matnr=126583))
     # import os
     # dir = "/home/aman/PycharmProjects/seasonality_hypothesis/older_plots/plots_product_aggregate/"
     # for i in os.listdir((dir)):
@@ -350,7 +357,7 @@ if __name__ == "__main__":
     #     except:
     #         pass
 
-    data = pd.read_csv("/home/aman/PycharmProjects/seasonality_hypothesis/new_seasonality_code_check/result.csv")
-    for index, row in data.iterrows():
-        print(row["matnr"])
-        ljung_box_test(df, matnr=row["matnr"])
+    # data = pd.read_csv("/home/aman/PycharmProjects/seasonality_hypothesis/new_seasonality_code_check/result.csv")
+    # for index, row in data.iterrows():
+    #     print(row["matnr"])
+    #     ljung_box_test(df, matnr=row["matnr"])

@@ -1,4 +1,5 @@
 import pandas as pd
+import time
 
 
 def smoothing_3(df):
@@ -35,11 +36,14 @@ def smoothing_5_new(df):
 
 
 def smoothing_7_new(df):
+    start = time.time()
     df_copy = df.copy()
     max_index = df.shape[0] - 1
     for i in range(0, max_index-5):
         mean = df.iloc[i:i+7]["quantity"].mean()
         df_copy["quantity"].iloc[i+3] = mean
+    end = time.time()
+    print("time for smoothing", (end - start), " seconds")
     return df_copy.iloc[3:-3]
 
 

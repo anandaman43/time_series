@@ -6,7 +6,9 @@ from statsmodels.tsa.seasonal import seasonal_decompose
 from stldecompose import decompose, forecast
 from dateutil import parser
 from outlier import ma_replace_outlier
+from seasonality_detection import outlier_on_aggregated
 from smoothing import *
+import time
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -96,8 +98,10 @@ def product_seasonal_comp(input_df, matnr=103029):
         final = final.groupby("dt_week")["quantity"].sum().reset_index()
     except:
         return None
+
+    final = outlier_on_aggregated(final)
     final = final.set_index("dt_week")
-    final.to_csv("/home/aman/PycharmProjects/seasonality_hypothesis/aggregated.csv")
+    # final.to_csv("/home/aman/PycharmProjects/seasonality_hypothesis/aggregated.csv")
     # plt.plot(final, marker=".")
     # plt.title("aggregated")
     # plt.show()
@@ -126,16 +130,20 @@ def product_seasonal_comp_5_point(df, matnr):
 
 
 def product_seasonal_comp_7_point(df, matnr):
+    start = time.time()
     input_df = product_seasonal_comp(df, matnr)
     # plt.figure(figsize=(16, 8))
     # plt.plot(input_df, marker=".")
     # plt.show()
+    start = time.time()
     input_df = input_df.reset_index().copy()
     max_index = input_df.shape[0] - 1
     df_copy = input_df.copy()
     for i in range(0, max_index-5):
         mean = input_df.iloc[i:i+7]["quantity"].mean()
         df_copy["quantity"].iloc[i+3] = mean
+    end = time.time()
+    print("time for smoothing", (end - start), " seconds")
     df_copy["quantity"].iloc[0] = df_copy.iloc[0+52]["quantity"]
     df_copy["quantity"].iloc[1] = df_copy.iloc[1+52]["quantity"]
     df_copy["quantity"].iloc[2] = df_copy.iloc[2+52]["quantity"]
@@ -143,6 +151,7 @@ def product_seasonal_comp_7_point(df, matnr):
     df_copy["quantity"].iloc[-2] = df_copy.iloc[-2-52]["quantity"]
     df_copy["quantity"].iloc[-3] = df_copy.iloc[-3-52]["quantity"]
     output_df = df_copy.set_index("dt_week")
+
     return output_df
 
 
@@ -171,20 +180,26 @@ def product_seasonal_comp_9_point(df, matnr):
 
 if __name__=="__main__":
     df = load_data()
-    sample = pd.read_csv("/home/aman/PycharmProjects/seasonality_hypothesis/data_generated/bucket_1_sample.csv")
-    sample = sample.drop_duplicates(subset=["matnr"])
-    product = pd.read_csv("~/PycharmProjects/seasonality_hypothesis/data/material_list.tsv", sep="\t")
-
-    for index, row in sample.iterrows():
-        matnr = int(row["matnr"])
-        temp = product_seasonal_comp_9_point(df, matnr).reset_index()
-        product_name = product[product["matnr"] == str(matnr)]["description"].values[0]
+    # sample = pd.read_csv("/home/aman/PycharmProjects/seasonality_hypothesis/data_generated/bucket_1_sample.csv")
+    # sample = sample.drop_duplicates(subset=["matnr"])
+    # product = pd.read_csv("~/PycharmProjects/seasonality_hypothesis/data/material_list.tsv", sep="\t")
+    #
+    # for index, row in sample.iterrows():
+    #     matnr = int(row["matnr"])
+    #     temp = product_seasonal_comp_9_point(df, matnr).reset_index()
+    #     product_name = product[product["matnr"] == str(matnr)]["description"].values[0]
         # plt.figure(figsize=(16, 8))
         # plt.plot(temp.set_index("dt_week"), marker=".")
-        plt.title(product_name)
-        plt.savefig("/home/aman/PycharmProjects/seasonality_hypothesis/seasonal_component/"+str(matnr)+"__"+product_name+".png")
+        # plt.title(product_name)
+        # plt.savefig("/home/aman/PycharmProjects/seasonality_hypothesis/seasonal_component/"+str(matnr)+"__"+product_name+".png")
     # for i in range(0, 30):
     #     print(temp.iloc[i]["quantity"], temp.iloc[i+52]["quantity"])
     # plt.plot(product_seasonal_comp(df, matnr), marker=".")
     # plt.title("smoothing_" + product_name)
     # plt.show()
+
+    matnr = 115583
+    temp = product_seasonal_comp_7_point(df, matnr).reset_index()
+    plt.plot(temp.set_index("dt_week"), marker=".")
+    plt.title("smoothened")
+    plt.show()
